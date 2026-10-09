@@ -5,15 +5,12 @@ import com.ibm.cics.botz.crecust.exception.CrecustException;
 import com.ibm.cics.botz.crecust.model.CrecustCommarea;
 import com.ibm.cics.botz.crecust.model.CustomerKy2;
 import com.ibm.cics.botz.crecust.model.NcsCustNoStuff;
-import com.ibm.cics.server.CicsConditionException;
-import com.ibm.cics.server.NameResource;
+import com.ibm.cics.botz.crecust.service.adapters.DBAdapter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +27,9 @@ import org.slf4j.LoggerFactory;
 public class CustomerNumberService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomerNumberService.class);
+
+    private final AbndprocDelegate abndprocDelegate = AbndprocDelegate.getInstance();
+    private final DBAdapter dbAdapter = DBAdapter.getInstance();
 
     /**
      * CICS named-resource ENQ/DEQ prefix for the customer-number lock.
@@ -96,22 +96,19 @@ public class CustomerNumberService {
      * (Rule 1, cics-transformation). No exception is re-thrown.
      *
      * @param commArea commarea; {@code commSortcode} is used to compose the 16-byte resource name
-     * @return the acquired {@link NameResource} on success; {@code null} if ENQ failed and a
-     *         silent-return fail-code has been set on the commarea
+     * @return the acquired resource name (opaque token) on success; {@code null} if ENQ failed and
+     *         a silent-return fail-code has been set on the commarea
      */
-    public NameResource enqueue(CrecustCommarea commArea) {
+    public String enqueue(CrecustCommarea commArea) {
         String resourceName = (NCS_ACT_NAME + commArea.getCommSortcode() + "  ")
                 .substring(0, ENQ_RESOURCE_LENGTH);
-
-        NameResource nameResource = new NameResource();
-        nameResource.setName(resourceName);
 
         LOGGER.debug("CustomerNumberService.enqueue() — ENQ resource='{}' (length={})",
                 resourceName, ENQ_RESOURCE_LENGTH);
 
         try {
-            nameResource.enqueue();
-        } catch (CicsConditionException e) {
+            abndprocDelegate.enqueue(resourceName);
+        } catch (CicsAdapterException e) {
             LOGGER.error("CustomerNumberService.enqueue() — ENQ failed; setting fail-code {}",
                     CrecustException.FAIL_CODE_ENQ, e);
             commArea.setCommSuccess("N");
@@ -119,7 +116,7 @@ public class CustomerNumberService {
             return null;
         }
 
-        return nameResource;
+        return resourceName;
     }
 
     /**
@@ -144,10 +141,10 @@ public class CustomerNumberService {
      *
      * @param commArea     commarea; {@code commNumber} is populated with the assigned customer
      *                     number on success
-     * @param nameResource the {@link NameResource} acquired by {@link #enqueue(CrecustCommarea)};
+     * @param resourceName the resource name token returned by {@link #enqueue(CrecustCommarea)};
      *                     passed so that DEQ can be issued on SQL failure
      */
-    public void getAndIncrementCustomerNumber(CrecustCommarea commArea, NameResource nameResource) {
+    public void getAndIncrementCustomerNumber(CrecustCommarea commArea, String resourceName) {
         // UPD-NCS_UN010: MOVE 1 TO NCS-CUST-NO-INC; MOVE SORTCODE TO NCS-CUST-NO-TEST-SORT
         NcsCustNoStuff ncsCustNoStuff = new NcsCustNoStuff();
         ncsCustNoStuff.setNcsCustNoInc(1L);
@@ -160,17 +157,17 @@ public class CustomerNumberService {
                 + "Searching for CONTROL_NAME=[{}]",
                 hostControlRow.getHvControlName().substring(0, ENQ_RESOURCE_LENGTH));
 
-        try (Connection conn = getDataSource().getConnection()) {
+        try (Connection conn = dbAdapter.getConnection(DATASOURCE_JNDI_NAME)) {
             // SELECT CONTROL_VALUE_NUM INTO :HV-CONTROL-VALUE-NUM
-            try (PreparedStatement sel = conn.prepareStatement(CONTROL_SELECT_SQL)) {
+            try (PreparedStatement sel = dbAdapter.prepareStatement(conn, CONTROL_SELECT_SQL)) {
                 sel.setString(1, hostControlRow.getHvControlName());
-                try (ResultSet rs = sel.executeQuery()) {
-                    if (!rs.next()) {
+                try (ResultSet rs = dbAdapter.executeQuery(sel)) {
+                    if (!dbAdapter.next(rs)) {
                         // SQLCODE +100 (row not found) → IF SQLCODE NOT = 0 branch
                         LOGGER.error("CustomerNumberService.getAndIncrementCustomerNumber() — "
                                 + "SELECT CONTROL failed: no row for CONTROL_NAME=[{}]",
                                 hostControlRow.getHvControlName().substring(0, ENQ_RESOURCE_LENGTH));
-                        failControlSql(commArea, nameResource);
+                        failControlSql(commArea, resourceName);
                         return;
                     }
                     hostControlRow.setHvControlValueNum(rs.getInt(1));
@@ -181,35 +178,26 @@ public class CustomerNumberService {
             hostControlRow.setHvControlValueNum(hostControlRow.getHvControlValueNum() + 1);
 
             // UPDATE CONTROL SET CONTROL_VALUE_NUM = :HV-CONTROL-VALUE-NUM
-            try (PreparedStatement upd = conn.prepareStatement(CONTROL_UPDATE_SQL)) {
+            try (PreparedStatement upd = dbAdapter.prepareStatement(conn, CONTROL_UPDATE_SQL)) {
                 upd.setInt(1, hostControlRow.getHvControlValueNum());
                 upd.setString(2, hostControlRow.getHvControlName());
-                upd.executeUpdate();
+                dbAdapter.executeUpdate(upd);
             }
         } catch (SQLException e) {
             LOGGER.error("CustomerNumberService.getAndIncrementCustomerNumber() — CONTROL SQL failed. "
                     + "SQLCODE={}", e.getErrorCode(), e);
-            failControlSql(commArea, nameResource);
+            failControlSql(commArea, resourceName);
             return;
         } catch (NamingException e) {
             LOGGER.error("CustomerNumberService.getAndIncrementCustomerNumber() — JNDI lookup of '{}' "
                     + "failed", DATASOURCE_JNDI_NAME, e);
-            failControlSql(commArea, nameResource);
+            failControlSql(commArea, resourceName);
             return;
         }
 
         pushCustomerNumber(commArea, ncsCustNoStuff, hostControlRow.getHvControlValueNum());
     }
 
-    /**
-     * Obtains the DB2 DataSource via JNDI (ADR-4 — no {@code @Resource}, no Spring injection).
-     *
-     * @return the DataSource bound at {@link #DATASOURCE_JNDI_NAME}
-     * @throws NamingException if the JNDI lookup fails
-     */
-    private DataSource getDataSource() throws NamingException {
-        return (DataSource) new InitialContext().lookup(DATASOURCE_JNDI_NAME);
-    }
 
     /**
      * Builds {@code HV-CONTROL-NAME PIC X(32)}:
@@ -231,10 +219,10 @@ public class CustomerNumberService {
      * {@code MOVE 'N' TO COMM-SUCCESS}, {@code MOVE '4' TO COMM-FAIL-CODE}.
      *
      * @param commArea     commarea receiving the fail-code
-     * @param nameResource the ENQ'd resource to release
+     * @param resourceName the ENQ'd resource name token to release
      */
-    private void failControlSql(CrecustCommarea commArea, NameResource nameResource) {
-        dequeue(commArea, nameResource);
+    private void failControlSql(CrecustCommarea commArea, String resourceName) {
+        dequeue(commArea, resourceName);
         commArea.setCommSuccess("N");
         commArea.setCommFailCode(CrecustException.FAIL_CODE_CONTROL_SQL);
     }
@@ -298,20 +286,20 @@ public class CustomerNumberService {
      *
      * @param commArea     commarea; {@code commSuccess} and {@code commFailCode} are set on
      *                     DEQ failure
-     * @param nameResource the {@link NameResource} acquired by {@link #enqueue(CrecustCommarea)};
-     *                     must be the same instance that was enqueued; may be {@code null} when
+     * @param resourceName the resource name token returned by {@link #enqueue(CrecustCommarea)};
+     *                     must be the same name that was enqueued; may be {@code null} when
      *                     ENQ was never acquired
      */
-    public void dequeue(CrecustCommarea commArea, NameResource nameResource) {
-        if (nameResource == null) {
-            LOGGER.warn("CustomerNumberService.dequeue() — nameResource is null; DEQ skipped");
+    public void dequeue(CrecustCommarea commArea, String resourceName) {
+        if (resourceName == null) {
+            LOGGER.warn("CustomerNumberService.dequeue() — resourceName is null; DEQ skipped");
             return;
         }
 
         try {
-            nameResource.dequeue();
+            abndprocDelegate.dequeue(resourceName);
             LOGGER.debug("CustomerNumberService.dequeue() — DEQ released resource");
-        } catch (CicsConditionException e) {
+        } catch (CicsAdapterException e) {
             LOGGER.error("CustomerNumberService.dequeue() — DEQ failed; setting fail-code {}",
                     CrecustException.FAIL_CODE_DEQ, e);
             commArea.setCommSuccess("N");

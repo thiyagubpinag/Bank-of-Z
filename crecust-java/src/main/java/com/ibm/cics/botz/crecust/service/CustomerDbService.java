@@ -4,13 +4,11 @@ import com.ibm.cics.botz.crecust.db.HostCustomerRow;
 import com.ibm.cics.botz.crecust.exception.CrecustException;
 import com.ibm.cics.botz.crecust.model.CrecustCommarea;
 import com.ibm.cics.botz.crecust.model.CustomerRecord;
-import com.ibm.cics.server.NameResource;
+import com.ibm.cics.botz.crecust.service.adapters.DBAdapter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +26,8 @@ import org.slf4j.LoggerFactory;
 public class CustomerDbService {
 
     private static final Logger log = LoggerFactory.getLogger(CustomerDbService.class);
+
+    private final DBAdapter dbAdapter = DBAdapter.getInstance();
 
     /** Eyecatcher literal — COBOL: MOVE 'CUST' TO HV-CUSTOMER-EYECATCHER (line 1161). */
     private static final String EYECATCHER = "CUST";
@@ -181,7 +181,7 @@ public class CustomerDbService {
      * @param hostCustomerRow       pre-allocated host-variable row (populated internally)
      * @param customerNumberService service providing {@link CustomerNumberService#dequeue} for
      *                              Fan-In-4 DEQ site #2 on INSERT failure
-     * @param nameResource          the {@link NameResource} acquired by ENQ; passed to dequeue
+     * @param nameResource          the resource-name token returned by ENQ; passed to dequeue
      *                              on INSERT failure
      */
     public void insertCustomer(
@@ -189,16 +189,15 @@ public class CustomerDbService {
             CustomerRecord customerRecord,
             HostCustomerRow hostCustomerRow,
             CustomerNumberService customerNumberService,
-            NameResource nameResource) {
+            String nameResource) {
 
         // Step 1 — Populate host variable row from commarea (WCD010 lines 1161–1197)
         populateHostCustomerRow(commArea, customerRecord, hostCustomerRow);
 
         // Step 2/3 — Get DataSource + execute INSERT with 17 bound parameters (NFR-4 try-with-resources)
         try {
-            DataSource ds = (DataSource) new InitialContext().lookup(DATASOURCE_JNDI_NAME);
-            try (Connection conn = ds.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(INSERT_CUSTOMER_SQL)) {
+            try (Connection conn = dbAdapter.getConnection(DATASOURCE_JNDI_NAME);
+                 PreparedStatement ps = dbAdapter.prepareStatement(conn, INSERT_CUSTOMER_SQL)) {
 
                 // Bind all 17 parameters in PE-3 column order (CRECUST.cbl lines 1239–1255)
                 // 1: CUSTOMER_EYECATCHER — HV-CUSTOMER-EYECATCHER PIC X(4)
@@ -236,7 +235,7 @@ public class CustomerDbService {
                 // 17: CUSTOMER_CS_REVIEW_DATE — HV-CUSTOMER-CS-REVIEW-DATE S9(9) COMP → INTEGER
                 ps.setInt(17,    hostCustomerRow.getHvCustomerCsReviewDate());
 
-                ps.executeUpdate();
+                dbAdapter.executeUpdate(ps);
             }
         } catch (SQLException | NamingException e) {
             // Silent-return path (Rule 1, AC-1.2) — COBOL: IF SQLCODE NOT = 0 (lines 1261–1268)

@@ -2,16 +2,13 @@ package com.ibm.cics.botz.crecust;
 
 import com.ibm.cics.botz.crecust.exception.CrecustException;
 import com.ibm.cics.botz.crecust.model.CrecustCommarea;
-import com.ibm.cics.botz.crecust.serializer.AbndInfoRecSerializer;
 import com.ibm.cics.botz.crecust.serializer.CrecustareaSerializer;
-import com.ibm.cics.botz.crecust.service.AbndprocDelegate;
 import com.ibm.cics.botz.crecust.service.CreditCheckService;
 import com.ibm.cics.botz.crecust.service.CrecustService;
 import com.ibm.cics.botz.crecust.service.CustomerDbService;
 import com.ibm.cics.botz.crecust.service.CustomerNumberService;
 import com.ibm.cics.botz.crecust.service.ProctranDbService;
 import com.ibm.cics.botz.crecust.service.ValidationService;
-import com.ibm.cics.server.CommAreaHolder;
 import com.ibm.cics.server.invocation.CICSProgram;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,20 +33,19 @@ public class Crecust {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Crecust.class);
 
-    /** Commarea holder set by the JCICS runtime before invoking the no-arg {@link #main()}. */
-    private CommAreaHolder commareaHolder;
+    /** Commarea buffer set before invoking the no-arg {@link #main()}. */
+    private byte[] commareaHolder;
 
     private final CrecustService service = new CrecustService(
             new ValidationService(),
             new CreditCheckService(),
             new CustomerNumberService(),
             new CustomerDbService(),
-            new ProctranDbService(),
-            new AbndprocDelegate(AbndInfoRecSerializer.INSTANCE));
+            new ProctranDbService());
 
     /**
      * JCICS Liberty / annotation-processor entry point.
-     * The JCICS annotation processor generates a {@code static main(CommAreaHolder)} proxy
+     * The JCICS annotation processor generates a {@code static main(byte[])} proxy
      * that sets {@link #commareaHolder} and then calls this method.
      */
     @CICSProgram("CRECUST")
@@ -58,19 +54,19 @@ public class Crecust {
     }
 
     /**
-     * CICS OSGi JVM-server entry point — called directly by the CICS runtime.
+     * Entry point.
      *
-     * @param cah commarea holder provided by CICS
+     * @param cah commarea byte array
      */
-    public static void main(CommAreaHolder cah) {
+    public static void main(byte[] cah) {
         Crecust instance = new Crecust();
         instance.commareaHolder = cah;
         instance.run(cah);
     }
 
-    private void run(CommAreaHolder cah) {
+    public void run(byte[] cah) {
         LOGGER.info("CRECUST entry");
-        byte[] raw = cah.getValue();
+        byte[] raw = cah;
         CrecustCommarea commarea = CrecustareaSerializer.INSTANCE.fromBytes(raw, 0);
         try {
             service.execute(commarea);

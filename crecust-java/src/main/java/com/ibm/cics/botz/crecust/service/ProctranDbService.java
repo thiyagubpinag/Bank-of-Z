@@ -4,9 +4,6 @@ import com.ibm.cics.botz.crecust.db.HostProctranRow;
 import com.ibm.cics.botz.crecust.exception.CrecustException;
 import com.ibm.cics.botz.crecust.model.AbndInfoRec;
 import com.ibm.cics.botz.crecust.model.CrecustCommarea;
-import com.ibm.cics.server.NameResource;
-import com.ibm.cics.server.Region;
-import com.ibm.cics.server.Task;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,7 +11,8 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import javax.naming.InitialContext;
+import com.ibm.cics.botz.crecust.service.adapters.DBAdapter;
+import com.ibm.cics.botz.crecust.service.adapters.RESTAdapter;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -30,6 +28,12 @@ import org.slf4j.LoggerFactory;
 public class ProctranDbService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProctranDbService.class);
+
+    private final RESTAdapter restAdapter = RESTAdapter.getInstance();
+
+    private final DBAdapter dbAdapter = DBAdapter.getInstance();
+
+    private final AbndprocDelegate abndprocDelegate = AbndprocDelegate.getInstance();
 
     /** JNDI name for the PROCTRAN DB2 DataSource (ADR-4). */
     private static final String PROCTRAN_DATASOURCE = "jdbc/crecustDB2DS";
@@ -100,7 +104,7 @@ public class ProctranDbService {
      * @param storedDob             date of birth in DD/MM/YYYY format (10 chars) at descriptor
      *                              bytes 30–39
      * @param customerNumberService service owning the CICS DEQ operation (Fan-In-4 site 3)
-     * @param nameResource          the acquired CICS NameResource to release on abort
+     * @param nameResource          the resource-name token to release on abort
      * @param abndprocDelegate      CICS LINK delegate to ABNDPROC
      */
     public void insertProctran(
@@ -110,8 +114,7 @@ public class ProctranDbService {
             String storedName,
             String storedDob,
             CustomerNumberService customerNumberService,
-            NameResource nameResource,
-            AbndprocDelegate abndprocDelegate) {
+            String nameResource) {
 
         // Step 1 — timestamp (replaces EXEC CICS ASKTIME / FORMATTIME)
         LocalDateTime now = LocalDateTime.now();
@@ -133,7 +136,7 @@ public class ProctranDbService {
         String hvProctranDesc = new String(desc);
 
         // Step 4 — fixed fields
-        long eibtaskn = Task.getTask().getTaskNumber();
+        long eibtaskn = abndprocDelegate.getTaskNumber();
         String hvProctranRef = String.format("%012d", eibtaskn);
 
         HostProctranRow row = HostProctranRow.builder()
@@ -163,9 +166,9 @@ public class ProctranDbService {
         // reach the single notifying-abort catch block below (COBOL WPD010 IF SQLCODE NOT = 0).
         try {
             try {
-                DataSource ds = (DataSource) new InitialContext().lookup(PROCTRAN_DATASOURCE);
-                try (Connection conn = ds.getConnection();
-                     PreparedStatement ps = conn.prepareStatement(INSERT_PROCTRAN_SQL)) {
+                DataSource ds = restAdapter.getDataSource(PROCTRAN_DATASOURCE);
+                try (Connection conn = dbAdapter.getConnection(ds);
+                     PreparedStatement ps = dbAdapter.prepareStatement(conn, INSERT_PROCTRAN_SQL)) {
                     ps.setString(1, row.getHvProctranEyecatcher());
                     ps.setString(2, row.getHvProctranSortCode());
                     ps.setString(3, row.getHvProctranAccNumber());
@@ -175,7 +178,7 @@ public class ProctranDbService {
                     ps.setString(7, row.getHvProctranType());
                     ps.setString(8, row.getHvProctranDesc());
                     ps.setBigDecimal(9, row.getHvProctranAmount());
-                    ps.executeUpdate();
+                    dbAdapter.executeUpdate(ps);
                 }
             } catch (NamingException e) {
                 throw new SQLException("JNDI lookup failed for " + PROCTRAN_DATASOURCE, e);
@@ -204,7 +207,7 @@ public class ProctranDbService {
             customerNumberService.dequeue(commArea, nameResource);
 
             // Step 4 — ABEND 'HWPT' (line 1455) — no bare "HWPT" literal (Rule 4, AC-4.2)
-            Task.getTask().abend(CrecustException.ABEND_CODE_HWPT);
+            abndprocDelegate.abend(CrecustException.ABEND_CODE_HWPT);
         }
         // Step 6 — on success, return normally; caller (CrecustService) sets commSuccess='Y'
     }
@@ -258,17 +261,17 @@ public class ProctranDbService {
         long abndUtimeKey = now.toInstant(ZoneOffset.UTC).toEpochMilli();
 
         // MOVE EIBTASKN TO ABND-TASKNO-KEY — 4-digit zero-padded task number
-        String abndTasknoKey = String.format("%04d", Task.getTask().getTaskNumber());
+        String abndTasknoKey = abndprocDelegate.getFormattedTaskNumber();
 
         // EXEC CICS ASSIGN APPLID(ABND-APPLID) — Region.getAPPLID() (NOT Task.getTask().getTask()
         // .getRegion().getApplid() — does NOT exist in JCICS, story Boundaries & Constraints)
-        String abndApplid = Region.getAPPLID();
+        String abndApplid = abndprocDelegate.getApplid();
 
         // MOVE EIBTRNID TO ABND-TRANID
-        String abndTranid = Task.getTask().getTransactionName();
+        String abndTranid = abndprocDelegate.getTransactionName();
 
         // EXEC CICS ASSIGN PROGRAM(ABND-PROGRAM)
-        String abndProgram = Task.getTask().getInvokingProgramName();
+        String abndProgram = abndprocDelegate.getInvokingProgramName();
 
         // MOVE 'HWPT' TO ABND-CODE — no bare literal; use named constant (Rule 4, AC-4.2)
         String abndCode = CrecustException.ABEND_CODE_HWPT;

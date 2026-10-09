@@ -5,15 +5,6 @@ import com.ibm.cics.botz.crecust.model.CrecustCommarea;
 import com.ibm.cics.botz.crecust.model.WsChildData;
 import com.ibm.cics.botz.crecust.serializer.CrecustareaSerializer;
 import com.ibm.cics.botz.crecust.serializer.WsChildDataSerializer;
-import com.ibm.cics.server.AsyncService.BlockingAction;
-import com.ibm.cics.server.AsyncServiceImpl;
-import com.ibm.cics.server.Channel;
-import com.ibm.cics.server.ChildResponse;
-import com.ibm.cics.server.CicsConditionException;
-import com.ibm.cics.server.InvalidRequestException;
-import com.ibm.cics.server.NotFinishedException;
-import com.ibm.cics.server.NotFoundException;
-import com.ibm.cics.server.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +25,9 @@ import java.util.concurrent.Future;
 public class CreditCheckService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CreditCheckService.class);
+
+    /** CICS adapter — sole owner of JCICS dependencies. */
+    private final AbndprocDelegate abndprocDelegate = AbndprocDelegate.getInstance();
 
     // -------------------------------------------------------------------------
     // Named constants (Rule 8 / NFR-2.4)
@@ -122,9 +116,9 @@ public class CreditCheckService {
         }
 
         // Launch all five OCRn child transactions asynchronously (CRECUST.cbl lines 687–726)
-        List<Future<ChildResponse>> tokens = new ArrayList<>();
+        List<Future<?>> tokens = new ArrayList<>();
         for (String transId : OCR_TRANSIDS) {
-            Future<ChildResponse> token = runChildTransaction(transId, CIPCREDCHANN, commArea);
+            Future<?> token = runChildTransaction(transId, CIPCREDCHANN, commArea);
             if (token == null) {
                 return; // fail-code already set in runChildTransaction
             }
@@ -143,7 +137,7 @@ public class CreditCheckService {
         }
 
         // MOVE EIBTASKN TO WS-SEED (CRECUST.cbl lines 833 / 940)
-        long eibtaskn = Task.getTask().getTaskNumber();
+        long eibtaskn = abndprocDelegate.getTaskNumber();
         computeReviewDate(commArea, eibtaskn, wsRetrievedCnt);
     }
 
@@ -166,9 +160,8 @@ public class CreditCheckService {
     void putContainer(CrecustCommarea commArea, String channelName, String containerName) {
         byte[] commareaBytes = CrecustareaSerializer.INSTANCE.toBytes(commArea);
         try {
-            Channel channel = Task.getTask().createChannel(channelName);
-            channel.createContainer(containerName).put(commareaBytes);
-        } catch (CicsConditionException e) {
+            abndprocDelegate.putContainer(channelName, containerName, commareaBytes);
+        } catch (CicsAdapterException e) {
             LOGGER.error("putContainer failed: channel={} container={} error={}",
                     channelName, containerName, e.getMessage());
             commArea.setCommSuccess(COMM_SUCCESS_NO);
@@ -192,17 +185,15 @@ public class CreditCheckService {
      * @param transId     one of OCR1–OCR5
      * @param channelName the CICS channel name (use constant {@link #CIPCREDCHANN})
      * @param commArea    the commarea (fail-code set on error)
-     * @return the child token ({@code Future<ChildResponse>}) or {@code null} on failure
+     * @return the child token ({@code Future<?>}) or {@code null} on failure
      */
-    private Future<ChildResponse> runChildTransaction(
+    private Future<?> runChildTransaction(
             String transId, String channelName, CrecustCommarea commArea) {
         try {
-            Channel channel = Task.getTask().getChannel(channelName);
-            AsyncServiceImpl asyncService = new AsyncServiceImpl();
-            Future<ChildResponse> token = asyncService.runTransactionId(transId, channel);
+            Future<?> token = abndprocDelegate.runTransaction(transId, channelName);
             LOGGER.debug("runChildTransaction: launched transId={} channel={}", transId, channelName);
             return token;
-        } catch (CicsConditionException e) {
+        } catch (CicsAdapterException e) {
             LOGGER.error("runChildTransaction failed: transId={} channel={} error={}",
                     transId, channelName, e.getMessage());
             CrecustException ex = CrecustException.runTransidError(e);
@@ -258,23 +249,21 @@ public class CreditCheckService {
      * @param tokens   the child tokens returned by {@link #runChildTransaction}, in OCR1–OCR5 order
      * @return the number of children whose containers were successfully retrieved and deserialized
      */
-    int fetchAny(CrecustCommarea commArea, List<Future<ChildResponse>> tokens) {
+    int fetchAny(CrecustCommarea commArea, List<Future<?>> tokens) {
         int wsRetrievedCnt = 0;
         int wsTotalCsScr = 0;
         int wsChildReceivedCnt = 0;
         boolean wsFinishedFetching = false;
         int childIssuedCnt = tokens.size();
 
-        AsyncServiceImpl asyncService = new AsyncServiceImpl();
-
         // PERFORM UNTIL WS-FINISHED-FETCHING = 'Y' (CRECUST.cbl line 741)
         while (!wsFinishedFetching) {
 
-            ChildResponse childResponse;
+            Object childResponse;
             try {
                 // EXEC CICS FETCH ANY NOSUSPEND (CRECUST.cbl lines 749–756)
-                childResponse = asyncService.getAny(BlockingAction.NOSUSPEND);
-            } catch (NotFinishedException e) {
+                childResponse = abndprocDelegate.fetchAnyNoSuspend();
+            } catch (CicsAdapterException.NotFinished e) {
                 // DFHRESP(NOTFINISHED) RESP2=52 (CRECUST.cbl lines 767–856)
                 if (wsRetrievedCnt == 0) {
                     // No children replied at all — fatal (CRECUST.cbl lines 774–796)
@@ -288,14 +277,14 @@ public class CreditCheckService {
                 LOGGER.debug("fetchAny: NOTFINISHED with {} retrieved; computing average", wsRetrievedCnt);
                 wsFinishedFetching = true;
                 continue;
-            } catch (InvalidRequestException e) {
+            } catch (CicsAdapterException.InvalidRequest e) {
                 // DFHRESP(INVREQ) RESP2=1 — parent never had any children (CRECUST.cbl lines 861–884)
                 LOGGER.error("fetchAny: INVREQ (no children) — fail-code D");
                 CrecustException ex = CrecustException.ccInvreq(e);
                 commArea.setCommSuccess(ex.getCommSuccess());
                 commArea.setCommFailCode(ex.getCommFailCode());
                 return 0;
-            } catch (NotFoundException e) {
+            } catch (CicsAdapterException.NotFound e) {
                 // DFHRESP(NOTFND) RESP2=1 — no more available responses (CRECUST.cbl lines 889–963)
                 // Exit the loop cleanly; score computed below if wsRetrievedCnt > 0
                 LOGGER.debug("fetchAny: NOTFND — no more responses; retrievedCnt={}", wsRetrievedCnt);
@@ -304,18 +293,18 @@ public class CreditCheckService {
             }
 
             // Evaluate WS-CHILD-FETCH-COMPST (CRECUST.cbl lines 970–1127)
-            ChildResponse.CompletionStatus compStatus = childResponse.getCompletionStatus();
+            String compStatus = abndprocDelegate.getCompletionStatus(childResponse);
 
-            if (compStatus == ChildResponse.CompletionStatus.NORMAL) {
+            if (AbndprocDelegate.COMPLETION_NORMAL.equals(compStatus)) {
                 // Determine container name from token index (mirrors WS-CHILD-TKN(n) lookup)
                 String containerName = resolveContainerName(tokens, childResponse);
-                Channel channel = childResponse.getChannel();
+                String channel = abndprocDelegate.getChildChannelName(childResponse);
 
                 byte[] containerBytes;
                 try {
                     // EXEC CICS GET CONTAINER (CRECUST.cbl lines 1010–1016)
-                    containerBytes = channel.getContainer(containerName).get();
-                } catch (CicsConditionException e) {
+                    containerBytes = abndprocDelegate.getChildContainer(childResponse, containerName);
+                } catch (CicsAdapterException e) {
                     // GET CONTAINER failed — fail-code 'E' (CRECUST.cbl lines 1018–1044)
                     LOGGER.error("fetchAny: GET CONTAINER failed: container={} channel={} error={}",
                             containerName, channel, e.getMessage());
@@ -335,7 +324,7 @@ public class CreditCheckService {
                 LOGGER.debug("fetchAny: NORMAL result: container={} score={} retrievedCnt={}",
                         containerName, wsChildData.getCustomerCreditScore(), wsRetrievedCnt);
 
-            } else if (compStatus == ChildResponse.CompletionStatus.ABEND) {
+            } else if (AbndprocDelegate.COMPLETION_ABEND.equals(compStatus)) {
                 // WHEN DFHVALUE(ABEND) (CRECUST.cbl lines 1055–1072)
                 LOGGER.error("fetchAny: child ABEND completion — fail-code F");
                 CrecustException ex = CrecustException.ccAbend();
@@ -343,7 +332,7 @@ public class CreditCheckService {
                 commArea.setCommFailCode(ex.getCommFailCode());
                 return wsRetrievedCnt;
 
-            } else if (compStatus == ChildResponse.CompletionStatus.SECERROR) {
+            } else if (AbndprocDelegate.COMPLETION_SECERROR.equals(compStatus)) {
                 // WHEN DFHVALUE(SECERROR) (CRECUST.cbl lines 1074–1098)
                 LOGGER.error("fetchAny: child SECERROR completion — fail-code G");
                 CrecustException ex = CrecustException.ccSecError();
@@ -389,12 +378,12 @@ public class CreditCheckService {
      * @param childResponse the response returned by {@code getAny()}
      * @return the container name (CIPA–CIPE) for this response
      */
-    private String resolveContainerName(List<Future<ChildResponse>> tokens, ChildResponse childResponse) {
+    private String resolveContainerName(List<Future<?>> tokens, Object childResponse) {
         for (int i = 0; i < tokens.size() && i < CONTAINER_NAMES.length; i++) {
-            Future<ChildResponse> future = tokens.get(i);
+            Future<?> future = tokens.get(i);
             if (future.isDone()) {
                 try {
-                    if (childResponse.equals(future.get())) {
+                    if (abndprocDelegate.isSameChildResponse(childResponse, future)) {
                         return CONTAINER_NAMES[i];
                     }
                 } catch (InterruptedException e) {
