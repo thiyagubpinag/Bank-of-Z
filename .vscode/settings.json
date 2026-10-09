@@ -10,5 +10,8 @@
     },
     "zopeneditor.zowe": {
         "defaultCliProfile": "bank-of-z.rse"
-    }
+    },
+     "bob-z-extension.transform.enabled": true,
+  "bob-z-extension.transform.spec.enabled": true,
+  "bob-z-extension.validate.enabled": true,
 }

@@ -1,0 +1,4 @@
+com/ibm/cics/botz/common/Lists.class
+com/ibm/cics/botz/common/ByteArraySerializable.class
+com/ibm/cics/botz/common/ByteArraySerializer.class
+com/ibm/cics/botz/common/Settable.class

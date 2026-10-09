@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "programName": "CRECUST",
+  "createdAt": "2026-10-01T12:32:49.205Z",
+  "entrypoints": [],
+  "configuration": {
+    "target_app_architecture": "cics_batch",
+    "target_java_version": "21",
+    "target_build_system": "maven",
+    "use_lombok_annotations": true,
+    "database_connection": "jdbc"
+  },
+  "mode": "monolith"
+}

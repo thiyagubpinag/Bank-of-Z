@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "programName": "BNK1CRA",
+  "createdAt": "2026-10-01T12:34:11.351Z",
+  "entrypoints": [],
+  "configuration": {
+    "target_app_architecture": "cics_batch",
+    "target_java_version": "21",
+    "target_build_system": "maven",
+    "use_lombok_annotations": true
+  },
+  "mode": "monolith"
+}

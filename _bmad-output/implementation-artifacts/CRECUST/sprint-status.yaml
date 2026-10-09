@@ -1,0 +1,90 @@
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created, ready for development
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed
+
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+# Action Item Status:
+#   - open: Committed during a retrospective, not yet addressed
+#   - in-progress: Actively being worked on
+#   - done: Completed
+
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when its first story starts (via build's sprint sync)
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates the next story after the previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Retrospective appends its action items to action_items; the status view surfaces open ones
+generated: 10-01-2026 09:00
+last_updated: 10-09-2026 06:13
+project: Bank-of-Z
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts/CRECUST
+development_status:
+  epic-1: in-progress
+  1-1-maven-project-pom-xml-is-created-at-the-correct-path: review
+  1-2-shared-infrastructure-utility-library-is-generated: review
+  epic-1-retrospective: optional
+
+  epic-2: in-progress
+  2-1-core-model-classes-and-lombok-annotations: review
+  2-2-cat-3a-redefines-groups-record-classes-with-pic-getter-sette: review
+  2-3-proc-tran-desc-redefines-group-cat-4a-pattern-b-shared-memor: review
+  2-4-proc-tran-eye-catcher-and-case-1-case-2-condition-id-redefin: review
+  2-5-three-canonical-bytearrayserializer-classes-adr-a-rule-5-rul: review
+  epic-2-retrospective: optional
+
+  epic-3: in-progress
+  3-1-crecust-entry-point-class-commarea-receive-delegate-and-retu: review
+  3-2-crecustservice-orchestrator-skeleton-with-full-flow-wiring: review
+  3-3-eibcalen-partial-copy-guard-in-crecustareaserializer: review
+  3-4-crecustservice-populatetimeanddate-jcics-asktime-and-formatt: review
+  3-5-crecustservice-cics-version-check-wscicstslevelnumgrp-popula: review
+  epic-3-retrospective: optional
+
+  epic-4: in-progress
+  4-1-validationservice-validatetitle-11-value-title-check-fr-2: done
+  4-2-validationservice-validatedateofbirth-java-time-dob-checks-f: review
+  epic-4-retrospective: optional
+
+  epic-5: in-progress
+  5-1-creditcheckservice-putcontainer-cics-channel-and-container-c: review
+  5-2-creditcheckservice-runchildtransaction-async-launch-of-ocr1: review
+  5-3-creditcheckservice-fetchany-result-collection-and-score-aggr: review
+  5-4-creditcheckservice-review-date-computation-fr-6: review
+  epic-5-retrospective: optional
+
+  epic-6: in-progress
+  6-1-customernumberservice-enqueue-jcics-nameresource-enq-fr-7-1: review
+  6-2-customernumberservice-getandincrementcustomernumber-jdbc-con: review
+  6-3-customernumberservice-dequeue-four-deq-call-sites-fr-7-5-ac: review
+  epic-6-retrospective: optional
+
+  epic-7: in-progress
+  7-1-customerdbservice-populate-hostcustomerrow-from-commarea-fr: review
+  7-2-customerdbservice-insertcustomer-jdbc-insert-customer-17-col: review
+  epic-7-retrospective: optional
+
+  epic-8: in-progress
+  8-1-proctrandbservice-insertproctran-proctran-assembly-and-jdbc: review
+  8-2-notifying-abort-path-abndprocdelegate-and-proctran-sql-failu: review
+  epic-8-retrospective: optional
+
+  epic-9: in-progress
+  9-1-crecustexception-17-fail-code-constants-and-16-factory-metho: review
+  9-2-rule-16-grounding-no-exception-handler-without-cobol-constru: review
+  epic-9-retrospective: optional

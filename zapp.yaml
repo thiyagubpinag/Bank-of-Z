@@ -9,21 +9,59 @@ description: >-
 author: IBM Z Open Editor
 
 propertyGroups:
-  - name: search-all-local
+  # ── COBOL ─────────────────────────────────────────────────────────────
+  # syslib  : COPY statements resolve here (directories containing *.cpy/*.copy files)
+  - name: cobol-local
+    language: cobol
     libraries:
       - name: syslib
         type: local
         locations:
-          - '**'
+          - "src/base/cics/copy"
+          - "src/base/ims/copy"
+
+  # ── PL/I ──────────────────────────────────────────────────────────────
+  # syslib  : %INCLUDE statements resolve here (directories containing *.inc files)
+  - name: pli-local
+    language: pl1
+    libraries:
+      - name: syslib
+        type: local
+        locations: [] # TODO: replace [] with path(s) once directory exists, e.g. - "pli/includes"
+
+  # ── HLASM ─────────────────────────────────────────────────────────────
+  # syslib  : COPY statements resolve here (directories containing *.mac files)
+  - name: asm-local
+    language: hlasm
+    libraries:
+      - name: syslib
+        type: local
+        locations: [] # TODO: replace [] with path(s) once directory exists, e.g. - "asm/macros"
+
+  # ── JCL ───────────────────────────────────────────────────────────────
+  # syslib  : INCLUDE statements resolve here (directories containing *.jcl files)
+  # proclib : EXEC PROC statements resolve here (directories containing *.proc files)
+  - name: jcl-local
+    language: jcl
+    libraries:
+      - name: syslib
+        type: local
+        locations:
+          - "src/base/batch/jcl"
+      - name: proclib
+        type: local
+        locations: [] # TODO: replace [] with path(s) once directory exists, e.g. - "jcl/proclib"
+
+  # Remote MVS libraries for COBOL
   - name: remote-libraries
     language: cobol
     compilerOptions: CICS
     libraries:
-        - name: syslib
-          type: mvs
-          locations:
-             - BANKZ.DBB.BMS.COPY    # default name when running bank-of-z setup
-             - CICSTS63.CICS.SDFHCOB
+      - name: syslib
+        type: mvs
+        locations:
+          - BANKZ.DBB.BMS.COPY    # default name when running bank-of-z setup
+          - CICSTS63.CICS.SDFHCOB
 
 profiles:
   # TAZ
@@ -35,7 +73,7 @@ profiles:
           - SYS1.PROCLIB # Required: Procedure libraries
         userLibraries:
           - BANKZ.V0R1M0.LOAD # Application load libraries
-          
+
   # Custom ZCodeScan rules example
   - name: zcodescan
     type: zcodescan
@@ -61,3 +99,26 @@ profiles:
         - "*.log" # Fetch build logs
         - "*.json" # Fetch Runtime.json and BuildReport.json
         - "*.html" # Fetch BuildReport.html
+
+  # Analysis profile for incremental scanning
+  - name: my-analysis
+    type: analysis
+    settings:
+      containsCics: true
+      imsRuntime: IMS_BATCH
+      analysisScope:
+        - name: cobol-scope
+          locations:
+            - "src/base/cics/cobol"
+            - "src/base/ims/cobol"
+        - name: pl1-scope
+          locations:
+            - "src/base/ims/pli"
+            - "src/base/batch/pli"
+        - name: hlasm-scope
+          locations:
+            - "src/base/ims/PSB"
+            - "src/base/ims/DBD"
+        - name: jcl-scope
+          locations:
+            - "src/base/batch/jcl"

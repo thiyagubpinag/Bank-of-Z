@@ -1,0 +1,79 @@
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created, ready for development
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed
+
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+# Action Item Status:
+#   - open: Committed during a retrospective, not yet addressed
+#   - in-progress: Actively being worked on
+#   - done: Completed
+
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when its first story starts (via build's sprint sync)
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates the next story after the previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Retrospective appends its action items to action_items; the status view surfaces open ones
+generated: 09-23-2026 00:00
+last_updated: 2025-07-14
+project: CREACC Java Modernisation
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts/CREACC
+development_status:
+  epic-1: in-progress
+  1-1-maven-project-scaffold-pom-xml: review
+  1-2-package-skeleton-and-coding-standards-gate: review
+  epic-1-retrospective: optional
+
+  epic-2: in-progress
+  2-1-infrastructure-interfaces-bytearrayserializer-bytearrayseria: review
+  2-2-creacccommarea-model-and-creacccommareaserializer-92-bytes: backlog
+  2-3-inqcustcommarea-model-and-inqcustcommareaserializer: backlog
+  2-4-inqacccucommarea-model-and-inqacccucommareaserializer-with-o: backlog
+  2-5-abndinforec-model-and-abndinforecserializer: backlog
+  2-6-proctrandata-model-and-proctrandataserializer-with-cat-4a-re: backlog
+  2-7-cross-program-data-structures-accountdata-customerrecord-ret: backlog
+  2-8-datetimeformatconstants-and-creacclayoutconstants: backlog
+  epic-2-retrospective: optional
+
+  epic-3: in-progress
+  3-1-accountcreationvalidator-validateaccounttype-account-type-va: review
+  3-2-statementdatecalculator-calculatemilestones-date-calculation: review
+  3-3-namedcounterservice-allocatenextaccountnumber-account-number: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-controldaojdbc-control-table-select-and-update: backlog
+  4-2-accountdaojdbc-insertaccount-account-insert: backlog
+  4-3-proctrandaojdbc-insertproctran-proctran-insert: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-creaccexceptionhandler-error-path-ordering-and-handler-groun: backlog
+  5-2-customer-existence-validation-via-cics-link-to-inqcust-fr-2: backlog
+  5-3-account-count-validation-via-cics-link-to-inqacccu-with-sync: backlog
+  5-4-cicsprogramlinkservice-cics-link-enq-deq: backlog
+  5-5-abendnotificationservice-cics-link-to-abndproc-void-return-r: backlog
+  5-6-exception-hierarchy-creaccexception-base-and-named-static-fa: backlog
+  epic-5-retrospective: optional
+
+  epic-6: backlog
+  6-1-creaccaccountservice-createaccount-main-orchestrator: backlog
+  6-2-creaccbatchrunner-thin-jcics-entry-point-and-no-dead-classes: backlog
+  6-3-creaccbatchconfig-manual-constructor-wiring: backlog
+  epic-6-retrospective: optional
