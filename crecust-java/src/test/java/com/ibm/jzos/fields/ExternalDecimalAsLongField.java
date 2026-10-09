@@ -1,0 +1,136 @@
+package com.ibm.jzos.fields;
+
+public class ExternalDecimalAsLongField implements LongAccessor {
+    protected int offset;
+    protected final int length;
+    protected final boolean signed;
+    protected final boolean signTrailing;
+    protected boolean signExternal;
+    protected final boolean blankWhenZero;
+    protected final long minValue;
+    protected final long maxValue;
+
+    public ExternalDecimalAsLongField(int offset, int length, boolean signed, boolean signTrailing, boolean signExternal, boolean blankWhenZero) {
+        this.offset = offset;
+        this.length = length;
+        this.signed = signed;
+        this.signTrailing = signTrailing;
+        this.signExternal = signExternal;
+        this.blankWhenZero = blankWhenZero;
+        long max = 0;
+        for (int i = 0; i < length; i++) {
+            max = max * 10 + 9;
+        }
+        this.maxValue = max;
+        this.minValue = signed ? -max : 0;
+    }
+
+    @Override
+    public int getByteLength() {
+        return length;
+    }
+
+    @Override
+    public int getOffset() {
+        return offset;
+    }
+
+    @Override
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
+
+    @Override
+    public long getLong(byte[] buffer) {
+        return getLong(buffer, this.offset);
+    }
+
+    @Override
+    public long getLong(byte[] buffer, int off) {
+        long val = 0;
+        boolean negative = false;
+        boolean allBlank = true;
+
+        for (int i = 0; i < length; i++) {
+            byte b = buffer[off + i];
+            if (b != ' ' && b != 0x40 && b != 0) {
+                allBlank = false;
+            }
+            int digit;
+            if (b >= '0' && b <= '9') {
+                digit = b - '0';
+            } else if ((b & 0xF0) == 0xF0 || (b & 0xF0) == 0xC0 || (b & 0xF0) == 0xD0) {
+                digit = b & 0x0F;
+                if ((b & 0xF0) == 0xD0) {
+                    negative = true;
+                }
+            } else {
+                digit = b & 0x0F;
+            }
+            val = val * 10 + digit;
+        }
+
+        if (allBlank && blankWhenZero) {
+            return 0L;
+        }
+        return negative ? -val : val;
+    }
+
+    @Override
+    public void putLong(long value, byte[] buffer) throws IllegalArgumentException {
+        putLong(value, buffer, this.offset);
+    }
+
+    @Override
+    public void putLong(long value, byte[] buffer, int off) throws IllegalArgumentException {
+        rangeCheck(value);
+        boolean negative = value < 0;
+        long absVal = Math.abs(value);
+        for (int i = length - 1; i >= 0; i--) {
+            int digit = (int) (absVal % 10);
+            byte ebcdicByte = (byte) (0xF0 | digit);
+            if (signed && !signExternal && ((signTrailing && i == length - 1) || (!signTrailing && i == 0))) {
+                ebcdicByte = (byte) ((negative ? 0xD0 : 0xC0) | digit);
+            }
+            buffer[off + i] = ebcdicByte;
+            absVal /= 10;
+        }
+    }
+
+    @Override
+    public boolean isSigned() {
+        return signed;
+    }
+
+    public boolean equals(Long a, long b) {
+        return a != null && a == b;
+    }
+
+    public boolean isBlankWhenZero() {
+        return blankWhenZero;
+    }
+
+    public boolean isSignExternal() {
+        return signExternal;
+    }
+
+    public boolean isSignTrailing() {
+        return signTrailing;
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public int getPrecision() {
+        return length;
+    }
+
+    public void setSignExternal(boolean signExternal) {
+        this.signExternal = signExternal;
+    }
+
+    protected void rangeCheck(long value) {
+        // Range check implementation
+    }
+}
