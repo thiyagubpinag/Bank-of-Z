@@ -315,7 +315,7 @@ public class CrecustareaSerializer implements ByteArraySerializer<CrecustCommare
      * the source array. The check performed per-field is:
      * <pre>
      *     if (FIELD_OFFSET + FIELD_WIDTH &lt;= length) {
-     *         obj.setField(FIELD.getString(bytes, offset + FIELD_OFFSET));
+     *         obj.setField(FIELD.getString(bytes, offset));
      *     }
      *     // else: leave field at Java default (null for String)
      * </pre>
@@ -334,79 +334,79 @@ public class CrecustareaSerializer implements ByteArraySerializer<CrecustCommare
         }
 
         if (COMM_EYECATCHER_OFFSET + COMM_EYECATCHER_WIDTH <= length) {
-            obj.setCommEyecatcher(COMM_EYECATCHER.getString(bytes, offset + COMM_EYECATCHER_OFFSET));
+            obj.setCommEyecatcher(COMM_EYECATCHER.getString(bytes, offset));
         }
         if (COMM_SORTCODE_OFFSET + COMM_SORTCODE_WIDTH <= length) {
-            obj.setCommSortcode(COMM_SORTCODE.getString(bytes, offset + COMM_SORTCODE_OFFSET));
+            obj.setCommSortcode(COMM_SORTCODE.getString(bytes, offset));
         }
         if (COMM_NUMBER_OFFSET + COMM_NUMBER_WIDTH <= length) {
-            obj.setCommNumber(COMM_NUMBER.getString(bytes, offset + COMM_NUMBER_OFFSET));
+            obj.setCommNumber(COMM_NUMBER.getString(bytes, offset));
         }
         if (COMM_TITLE_OFFSET + COMM_TITLE_WIDTH <= length) {
-            obj.setCommTitle(COMM_TITLE.getString(bytes, offset + COMM_TITLE_OFFSET));
+            obj.setCommTitle(COMM_TITLE.getString(bytes, offset));
         }
         if (COMM_FIRST_NAME_OFFSET + COMM_FIRST_NAME_WIDTH <= length) {
-            obj.setCommFirstName(COMM_FIRST_NAME.getString(bytes, offset + COMM_FIRST_NAME_OFFSET));
+            obj.setCommFirstName(COMM_FIRST_NAME.getString(bytes, offset));
         }
         if (COMM_LAST_NAME_OFFSET + COMM_LAST_NAME_WIDTH <= length) {
-            obj.setCommLastName(COMM_LAST_NAME.getString(bytes, offset + COMM_LAST_NAME_OFFSET));
+            obj.setCommLastName(COMM_LAST_NAME.getString(bytes, offset));
         }
         if (COMM_DOB_DAY_OFFSET + COMM_DOB_DAY_WIDTH <= length) {
-            obj.setCommDobDay(COMM_DOB_DAY.getString(bytes, offset + COMM_DOB_DAY_OFFSET));
+            obj.setCommDobDay(COMM_DOB_DAY.getString(bytes, offset));
         }
         if (COMM_DOB_MONTH_OFFSET + COMM_DOB_MONTH_WIDTH <= length) {
-            obj.setCommDobMonth(COMM_DOB_MONTH.getString(bytes, offset + COMM_DOB_MONTH_OFFSET));
+            obj.setCommDobMonth(COMM_DOB_MONTH.getString(bytes, offset));
         }
         if (COMM_DOB_YEAR_OFFSET + COMM_DOB_YEAR_WIDTH <= length) {
-            obj.setCommDobYear(COMM_DOB_YEAR.getString(bytes, offset + COMM_DOB_YEAR_OFFSET));
+            obj.setCommDobYear(COMM_DOB_YEAR.getString(bytes, offset));
         }
         if (COMM_PHONE_OFFSET + COMM_PHONE_WIDTH <= length) {
-            obj.setCommPhone(COMM_PHONE.getString(bytes, offset + COMM_PHONE_OFFSET));
+            obj.setCommPhone(COMM_PHONE.getString(bytes, offset));
         }
         if (COMM_ADDR_LINE1_OFFSET + COMM_ADDR_LINE1_WIDTH <= length) {
-            obj.setCommAddrLine1(COMM_ADDR_LINE1.getString(bytes, offset + COMM_ADDR_LINE1_OFFSET));
+            obj.setCommAddrLine1(COMM_ADDR_LINE1.getString(bytes, offset));
         }
         if (COMM_ADDR_LINE2_OFFSET + COMM_ADDR_LINE2_WIDTH <= length) {
-            obj.setCommAddrLine2(COMM_ADDR_LINE2.getString(bytes, offset + COMM_ADDR_LINE2_OFFSET));
+            obj.setCommAddrLine2(COMM_ADDR_LINE2.getString(bytes, offset));
         }
         if (COMM_CITY_OFFSET + COMM_CITY_WIDTH <= length) {
-            obj.setCommCity(COMM_CITY.getString(bytes, offset + COMM_CITY_OFFSET));
+            obj.setCommCity(COMM_CITY.getString(bytes, offset));
         }
         if (COMM_POSTCODE_OFFSET + COMM_POSTCODE_WIDTH <= length) {
-            obj.setCommPostcode(COMM_POSTCODE.getString(bytes, offset + COMM_POSTCODE_OFFSET));
+            obj.setCommPostcode(COMM_POSTCODE.getString(bytes, offset));
         }
         if (COMM_COUNTRY_OFFSET + COMM_COUNTRY_WIDTH <= length) {
-            obj.setCommCountry(COMM_COUNTRY.getString(bytes, offset + COMM_COUNTRY_OFFSET));
+            obj.setCommCountry(COMM_COUNTRY.getString(bytes, offset));
         }
         if (COMM_STATUS_OFFSET + COMM_STATUS_WIDTH <= length) {
-            obj.setCommStatus(COMM_STATUS.getString(bytes, offset + COMM_STATUS_OFFSET));
+            obj.setCommStatus(COMM_STATUS.getString(bytes, offset));
         }
         if (COMM_CREATED_DAY_OFFSET + COMM_CREATED_DAY_WIDTH <= length) {
-            obj.setCommCreatedDay(COMM_CREATED_DAY.getString(bytes, offset + COMM_CREATED_DAY_OFFSET));
+            obj.setCommCreatedDay(COMM_CREATED_DAY.getString(bytes, offset));
         }
         if (COMM_CREATED_MONTH_OFFSET + COMM_CREATED_MONTH_WIDTH <= length) {
-            obj.setCommCreatedMonth(COMM_CREATED_MONTH.getString(bytes, offset + COMM_CREATED_MONTH_OFFSET));
+            obj.setCommCreatedMonth(COMM_CREATED_MONTH.getString(bytes, offset));
         }
         if (COMM_CREATED_YEAR_OFFSET + COMM_CREATED_YEAR_WIDTH <= length) {
-            obj.setCommCreatedYear(COMM_CREATED_YEAR.getString(bytes, offset + COMM_CREATED_YEAR_OFFSET));
+            obj.setCommCreatedYear(COMM_CREATED_YEAR.getString(bytes, offset));
         }
         if (COMM_CREDIT_SCORE_OFFSET + COMM_CREDIT_SCORE_WIDTH <= length) {
-            obj.setCommCreditScore(COMM_CREDIT_SCORE.getString(bytes, offset + COMM_CREDIT_SCORE_OFFSET));
+            obj.setCommCreditScore(COMM_CREDIT_SCORE.getString(bytes, offset));
         }
         if (COMM_CS_REVIEW_DAY_OFFSET + COMM_CS_REVIEW_DAY_WIDTH <= length) {
-            obj.setCommCsReviewDay(COMM_CS_REVIEW_DAY.getString(bytes, offset + COMM_CS_REVIEW_DAY_OFFSET));
+            obj.setCommCsReviewDay(COMM_CS_REVIEW_DAY.getString(bytes, offset));
         }
         if (COMM_CS_REVIEW_MONTH_OFFSET + COMM_CS_REVIEW_MONTH_WIDTH <= length) {
-            obj.setCommCsReviewMonth(COMM_CS_REVIEW_MONTH.getString(bytes, offset + COMM_CS_REVIEW_MONTH_OFFSET));
+            obj.setCommCsReviewMonth(COMM_CS_REVIEW_MONTH.getString(bytes, offset));
         }
         if (COMM_CS_REVIEW_YEAR_OFFSET + COMM_CS_REVIEW_YEAR_WIDTH <= length) {
-            obj.setCommCsReviewYear(COMM_CS_REVIEW_YEAR.getString(bytes, offset + COMM_CS_REVIEW_YEAR_OFFSET));
+            obj.setCommCsReviewYear(COMM_CS_REVIEW_YEAR.getString(bytes, offset));
         }
         if (COMM_SUCCESS_OFFSET + COMM_SUCCESS_WIDTH <= length) {
-            obj.setCommSuccess(COMM_SUCCESS.getString(bytes, offset + COMM_SUCCESS_OFFSET));
+            obj.setCommSuccess(COMM_SUCCESS.getString(bytes, offset));
         }
         if (COMM_FAIL_CODE_OFFSET + COMM_FAIL_CODE_WIDTH <= length) {
-            obj.setCommFailCode(COMM_FAIL_CODE.getString(bytes, offset + COMM_FAIL_CODE_OFFSET));
+            obj.setCommFailCode(COMM_FAIL_CODE.getString(bytes, offset));
         }
 
         return obj;

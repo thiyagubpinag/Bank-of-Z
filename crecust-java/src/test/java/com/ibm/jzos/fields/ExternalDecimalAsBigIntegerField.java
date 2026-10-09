@@ -62,11 +62,12 @@ public class ExternalDecimalAsBigIntegerField implements BigIntegerAccessor {
 
     @Override
     public BigInteger getBigInteger(byte[] buffer) {
-        return getBigInteger(buffer, this.offset);
+        return getBigInteger(buffer, 0);
     }
 
     @Override
     public BigInteger getBigInteger(byte[] buffer, int off) {
+        off += this.offset;
         StringBuilder sb = new StringBuilder();
         boolean negative = false;
         for (int i = 0; i < length; i++) {
@@ -88,11 +89,12 @@ public class ExternalDecimalAsBigIntegerField implements BigIntegerAccessor {
 
     @Override
     public void putBigInteger(BigInteger value, byte[] buffer) throws IllegalArgumentException {
-        putBigInteger(value, buffer, this.offset);
+        putBigInteger(value, buffer, 0);
     }
 
     @Override
     public void putBigInteger(BigInteger value, byte[] buffer, int off) throws IllegalArgumentException {
+        off += this.offset;
         boolean negative = value.signum() < 0;
         String str = value.abs().toString();
         while (str.length() < length) {

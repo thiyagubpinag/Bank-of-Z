@@ -42,11 +42,12 @@ public class ExternalDecimalAsIntField implements IntAccessor {
 
     @Override
     public int getInt(byte[] buffer) {
-        return getInt(buffer, this.offset);
+        return getInt(buffer, 0);
     }
 
     @Override
     public int getInt(byte[] buffer, int off) {
+        off += this.offset;
         long val = 0;
         boolean negative = false;
         boolean allBlank = true;
@@ -79,11 +80,12 @@ public class ExternalDecimalAsIntField implements IntAccessor {
 
     @Override
     public void putInt(int value, byte[] buffer) throws IllegalArgumentException {
-        putInt(value, buffer, this.offset);
+        putInt(value, buffer, 0);
     }
 
     @Override
     public void putInt(int value, byte[] buffer, int off) throws IllegalArgumentException {
+        off += this.offset;
         rangeCheck(value);
         boolean negative = value < 0;
         int absVal = Math.abs(value);

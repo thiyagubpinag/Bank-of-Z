@@ -46,11 +46,12 @@ public class PackedDecimalAsBigIntegerField implements BigIntegerAccessor {
 
     @Override
     public BigInteger getBigInteger(byte[] buffer) throws IllegalArgumentException {
-        return getBigInteger(buffer, this.offset);
+        return getBigInteger(buffer, 0);
     }
 
     @Override
     public BigInteger getBigInteger(byte[] buffer, int off) throws IllegalArgumentException {
+        off += this.offset;
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < byteLength - 1; i++) {
             byte b = buffer[off + i];
@@ -71,11 +72,12 @@ public class PackedDecimalAsBigIntegerField implements BigIntegerAccessor {
 
     @Override
     public void putBigInteger(BigInteger value, byte[] buffer) throws IllegalArgumentException {
-        putBigInteger(value, buffer, this.offset);
+        putBigInteger(value, buffer, 0);
     }
 
     @Override
     public void putBigInteger(BigInteger value, byte[] buffer, int off) throws IllegalArgumentException {
+        off += this.offset;
         boolean negative = value.signum() < 0;
         String s = value.abs().toString();
         while (s.length() < precision) {

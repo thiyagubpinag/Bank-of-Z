@@ -34,22 +34,24 @@ public class ExternalFloatField implements DoubleAccessor {
 
     @Override
     public double getDouble(byte[] buffer) {
-        return getDouble(buffer, this.offset);
+        return getDouble(buffer, 0);
     }
 
     @Override
     public double getDouble(byte[] buffer, int off) {
+        off += this.offset;
         String str = new String(buffer, off, length).trim();
         return str.isEmpty() ? 0.0 : Double.parseDouble(str);
     }
 
     @Override
     public void putDouble(double value, byte[] buffer) {
-        putDouble(value, buffer, this.offset);
+        putDouble(value, buffer, 0);
     }
 
     @Override
     public void putDouble(double value, byte[] buffer, int off) {
+        off += this.offset;
         byte[] bytes = String.format("%." + scale + "e", value).getBytes();
         int toCopy = Math.min(bytes.length, length);
         System.arraycopy(bytes, 0, buffer, off, toCopy);

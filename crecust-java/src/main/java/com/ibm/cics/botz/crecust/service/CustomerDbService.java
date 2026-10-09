@@ -4,7 +4,6 @@ import com.ibm.cics.botz.crecust.db.HostCustomerRow;
 import com.ibm.cics.botz.crecust.exception.CrecustException;
 import com.ibm.cics.botz.crecust.model.CrecustCommarea;
 import com.ibm.cics.botz.crecust.model.CustomerRecord;
-import com.ibm.cics.server.NameResource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -26,6 +25,10 @@ import org.slf4j.LoggerFactory;
  * @see "CRECUST.cbl WRITE-CUSTOMER-DB2 section (WCD010, lines 1138–)"
  */
 public class CustomerDbService {
+
+    private static final CustomerDbService INSTANCE = new CustomerDbService();
+
+    public static CustomerDbService getInstance() { return INSTANCE; }
 
     private static final Logger log = LoggerFactory.getLogger(CustomerDbService.class);
 
@@ -53,6 +56,90 @@ public class CustomerDbService {
             " CUSTOMER_COUNTRY, CUSTOMER_STATUS, CUSTOMER_CREATED_DATE, CUSTOMER_CREDIT_SCORE, " +
             " CUSTOMER_CS_REVIEW_DATE) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    // -----------------------------------------------------------------------
+    // CustomerNumberService DB adapter methods (CustomerNumberService:DB:163–211)
+    // -----------------------------------------------------------------------
+
+    /**
+     * Opens and returns a {@link Connection} from the JNDI DataSource.
+     *
+     * <p>Covers CustomerNumberService:DB:163 and CustomerNumberService:DB:211.
+     *
+     * @return a new Connection from the DataSource bound at {@link #DATASOURCE_JNDI_NAME}
+     * @throws SQLException     if the connection cannot be obtained
+     * @throws javax.naming.NamingException if the JNDI lookup fails
+     */
+    public Connection getControlConnection() throws java.sql.SQLException, javax.naming.NamingException {
+        javax.sql.DataSource ds = (javax.sql.DataSource) new javax.naming.InitialContext().lookup(DATASOURCE_JNDI_NAME);
+        return ds.getConnection();
+    }
+
+    /**
+     * Prepares and returns a SELECT {@link PreparedStatement} for CONTROL queries.
+     *
+     * <p>Covers CustomerNumberService:DB:165.
+     *
+     * @param conn the open connection to use
+     * @param sql  the SELECT SQL string
+     * @return a PreparedStatement ready for parameter binding
+     * @throws java.sql.SQLException if preparation fails
+     */
+    public java.sql.PreparedStatement prepareControlSelect(Connection conn, String sql) throws java.sql.SQLException {
+        return conn.prepareStatement(sql);
+    }
+
+    /**
+     * Executes a SELECT query and returns the {@link java.sql.ResultSet}.
+     *
+     * <p>Covers CustomerNumberService:DB:167.
+     *
+     * @param ps the prepared SELECT statement (parameters already bound by caller)
+     * @return the ResultSet from executing the query
+     * @throws java.sql.SQLException if the query fails
+     */
+    public java.sql.ResultSet executeControlSelect(java.sql.PreparedStatement ps) throws java.sql.SQLException {
+        return ps.executeQuery();
+    }
+
+    /**
+     * Advances the ResultSet cursor and returns whether a row exists.
+     *
+     * <p>Covers CustomerNumberService:DB:168.
+     *
+     * @param rs the ResultSet to advance
+     * @return {@code true} if a row is available; {@code false} if the result set is empty
+     * @throws java.sql.SQLException if the cursor advancement fails
+     */
+    public boolean controlResultSetNext(java.sql.ResultSet rs) throws java.sql.SQLException {
+        return rs.next();
+    }
+
+    /**
+     * Prepares and returns an UPDATE {@link PreparedStatement} for CONTROL updates.
+     *
+     * <p>Covers CustomerNumberService:DB:184.
+     *
+     * @param conn the open connection to use
+     * @param sql  the UPDATE SQL string
+     * @return a PreparedStatement ready for parameter binding
+     * @throws java.sql.SQLException if preparation fails
+     */
+    public java.sql.PreparedStatement prepareControlUpdate(Connection conn, String sql) throws java.sql.SQLException {
+        return conn.prepareStatement(sql);
+    }
+
+    /**
+     * Executes an UPDATE statement.
+     *
+     * <p>Covers CustomerNumberService:DB:187.
+     *
+     * @param ps the prepared UPDATE statement (parameters already bound by caller)
+     * @throws java.sql.SQLException if the update fails
+     */
+    public void executeControlUpdate(java.sql.PreparedStatement ps) throws java.sql.SQLException {
+        ps.executeUpdate();
+    }
 
     // -----------------------------------------------------------------------
     // Story 7.1 — populate HostCustomerRow from commarea
@@ -189,7 +276,7 @@ public class CustomerDbService {
             CustomerRecord customerRecord,
             HostCustomerRow hostCustomerRow,
             CustomerNumberService customerNumberService,
-            NameResource nameResource) {
+            String nameResource) {
 
         // Step 1 — Populate host variable row from commarea (WCD010 lines 1161–1197)
         populateHostCustomerRow(commArea, customerRecord, hostCustomerRow);

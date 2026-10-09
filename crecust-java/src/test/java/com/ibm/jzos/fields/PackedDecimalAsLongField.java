@@ -42,11 +42,12 @@ public class PackedDecimalAsLongField implements LongAccessor {
 
     @Override
     public long getLong(byte[] buffer) throws IllegalArgumentException {
-        return getLong(buffer, this.offset);
+        return getLong(buffer, 0);
     }
 
     @Override
     public long getLong(byte[] buffer, int off) {
+        off += this.offset;
         long val = 0;
         for (int i = 0; i < byteLength - 1; i++) {
             byte b = buffer[off + i];
@@ -64,11 +65,12 @@ public class PackedDecimalAsLongField implements LongAccessor {
 
     @Override
     public void putLong(long value, byte[] buffer) throws IllegalArgumentException {
-        putLong(value, buffer, this.offset);
+        putLong(value, buffer, 0);
     }
 
     @Override
     public void putLong(long value, byte[] buffer, int off) throws IllegalArgumentException {
+        off += this.offset;
         rangeCheck(value);
         boolean negative = value < 0;
         long absVal = Math.abs(value);

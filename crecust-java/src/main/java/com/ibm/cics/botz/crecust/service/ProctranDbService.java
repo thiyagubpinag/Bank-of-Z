@@ -4,7 +4,6 @@ import com.ibm.cics.botz.crecust.db.HostProctranRow;
 import com.ibm.cics.botz.crecust.exception.CrecustException;
 import com.ibm.cics.botz.crecust.model.AbndInfoRec;
 import com.ibm.cics.botz.crecust.model.CrecustCommarea;
-import com.ibm.cics.server.NameResource;
 import com.ibm.cics.server.Region;
 import com.ibm.cics.server.Task;
 import java.math.BigDecimal;
@@ -28,6 +27,10 @@ import org.slf4j.LoggerFactory;
  * @see "CRECUST.cbl WRITE-PROCTRAN-DB2 section"
  */
 public class ProctranDbService {
+
+    private static final ProctranDbService INSTANCE = new ProctranDbService();
+
+    public static ProctranDbService getInstance() { return INSTANCE; }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProctranDbService.class);
 
@@ -110,7 +113,7 @@ public class ProctranDbService {
             String storedName,
             String storedDob,
             CustomerNumberService customerNumberService,
-            NameResource nameResource,
+            String nameResource,
             AbndprocDelegate abndprocDelegate) {
 
         // Step 1 — timestamp (replaces EXEC CICS ASKTIME / FORMATTIME)
@@ -126,10 +129,11 @@ public class ProctranDbService {
         // COBOL: HV-PROCTRAN-DESC(17:14)→ Java [16..29]
         // COBOL: HV-PROCTRAN-DESC(31:10)→ Java [30..39]
         char[] desc = new char[PROCTRAN_DESC_LENGTH];
-        System.arraycopy(storedSortcode.toCharArray(), 0, desc, 0, 6);
-        System.arraycopy(storedCustno.toCharArray(),   0, desc, 6, 10);
-        System.arraycopy(storedName.toCharArray(),     0, desc, 16, 14);
-        System.arraycopy(storedDob.toCharArray(),      0, desc, 30, 10);
+        java.util.Arrays.fill(desc, ' ');
+        copyField(storedSortcode, desc, 0, 6);
+        copyField(storedCustno,   desc, 6, 10);
+        copyField(storedName,     desc, 16, 14);
+        copyField(storedDob,      desc, 30, 10);
         String hvProctranDesc = new String(desc);
 
         // Step 4 — fixed fields
@@ -298,5 +302,14 @@ public class ProctranDbService {
                 .abndSqlcode(abndSqlcode)
                 .abndFreeform(abndFreeform)
                 .build();
+    }
+
+    /**
+     * COBOL alphanumeric MOVE into a fixed-width slice: truncates to {@code width}; the
+     * remainder of the slice keeps its space fill.
+     */
+    private static void copyField(String src, char[] dest, int destPos, int width) {
+        int len = Math.min(src.length(), width);
+        src.getChars(0, len, dest, destPos);
     }
 }

@@ -1,6 +1,7 @@
 com/ibm/jzos/fields/FloatAccessor.class
 com/ibm/jzos/fields/IbmFloatField.class
 com/ibm/jzos/fields/AssemblerDatatypeFactory.class
+com/ibm/cics/botz/crecust/CrecustValidateTest.class
 com/ibm/jzos/fields/Field.class
 com/ibm/jzos/fields/PackedDecimalAsBigDecimalField.class
 com/ibm/jzos/fields/ByteArrayField.class

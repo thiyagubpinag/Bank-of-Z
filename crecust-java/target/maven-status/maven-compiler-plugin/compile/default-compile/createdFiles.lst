@@ -11,6 +11,7 @@ com/ibm/cics/botz/crecust/model/ProcTranDescCrecus.class
 com/ibm/cics/botz/crecust/model/ProcTranDescCreacc.class
 com/ibm/cics/botz/crecust/model/WsCicstsLevelNumGrp.class
 com/ibm/cics/botz/crecust/db/HostProctranRow$HostProctranRowBuilder.class
+com/ibm/cics/botz/crecust/service/CicsAdapterException$NotFound.class
 com/ibm/cics/botz/crecust/model/ProcTranDescConstants.class
 com/ibm/cics/botz/crecust/model/Case1ConditionId$Case1ConditionIdBuilder.class
 com/ibm/cics/botz/crecust/service/CustomerDbService.class
@@ -45,11 +46,14 @@ com/ibm/cics/botz/crecust/model/ProcTranEyeCatcher.class
 com/ibm/cics/botz/crecust/serializer/WsChildDataSerializer.class
 com/ibm/cics/botz/crecust/model/ProctranData$ProctranDataBuilder.class
 com/ibm/cics/botz/crecust/db/HostCustomerRow$HostCustomerRowBuilder.class
+com/ibm/cics/botz/crecust/service/CicsAdapterException$CicsCondition.class
 com/ibm/cics/botz/crecust/model/Case2ConditionId.class
 com/ibm/cics/botz/crecust/service/CreditCheckService.class
 com/ibm/cics/botz/crecust/model/WsCicstsLevelNumGrp$WsCicstsLevelNumGrpBuilder.class
 com/ibm/cics/botz/crecust/exception/package-info.class
+com/ibm/cics/botz/crecust/service/ChildResult.class
 com/ibm/cics/botz/crecust/serializer/package-info.class
+com/ibm/cics/botz/crecust/service/CicsAdapterException.class
 com/ibm/cics/botz/crecust/model/AbndInfoRec.class
 com/ibm/cics/botz/crecust/model/CustomerControlRecord.class
 com/ibm/cics/botz/crecust/model/WsTimeNowGrp$WsTimeNowGrpBuilder.class
@@ -57,8 +61,10 @@ com/ibm/cics/botz/crecust/model/CrecustCommarea$CrecustCommareaBuilder.class
 com/ibm/cics/botz/crecust/model/NcsCustNoStuff.class
 com/ibm/cics/botz/crecust/db/HostControlRow.class
 com/ibm/cics/botz/crecust/model/ProcTranTimeGrp$ProcTranTimeGrpBuilder.class
+com/ibm/cics/botz/crecust/service/CicsAdapterException$InvReq.class
 com/ibm/cics/botz/crecust/model/CrecustCommarea.class
 com/ibm/cics/botz/crecust/model/package-info.class
+com/ibm/cics/botz/crecust/service/CicsAdapterException$NotFinished.class
 com/ibm/cics/botz/crecust/service/CrecustService.class
 com/ibm/cics/botz/crecust/model/WsChildData.class
 com/ibm/cics/botz/crecust/model/ProcTranDateGrp$ProcTranDateGrpBuilder.class

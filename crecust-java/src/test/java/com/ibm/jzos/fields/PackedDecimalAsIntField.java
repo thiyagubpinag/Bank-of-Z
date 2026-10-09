@@ -42,11 +42,12 @@ public class PackedDecimalAsIntField implements IntAccessor {
 
     @Override
     public int getInt(byte[] buffer) throws IllegalArgumentException {
-        return getInt(buffer, this.offset);
+        return getInt(buffer, 0);
     }
 
     @Override
     public int getInt(byte[] buffer, int off) throws IllegalArgumentException {
+        off += this.offset;
         int val = 0;
         for (int i = 0; i < byteLength - 1; i++) {
             byte b = buffer[off + i];
@@ -64,11 +65,12 @@ public class PackedDecimalAsIntField implements IntAccessor {
 
     @Override
     public void putInt(int value, byte[] buffer) throws IllegalArgumentException {
-        putInt(value, buffer, this.offset);
+        putInt(value, buffer, 0);
     }
 
     @Override
     public void putInt(int value, byte[] buffer, int off) throws IllegalArgumentException {
+        off += this.offset;
         rangeCheck(value);
         boolean negative = value < 0;
         int absVal = Math.abs(value);

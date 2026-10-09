@@ -6,12 +6,9 @@ import com.ibm.cics.botz.crecust.model.WsCicstsLevelNumGrp;
 import com.ibm.cics.botz.crecust.model.WsOrigDateGrp;
 import com.ibm.cics.botz.crecust.model.WsTimeNowGrp;
 import com.ibm.cics.botz.crecust.db.HostCustomerRow;
-import com.ibm.cics.server.NameResource;
-import com.ibm.cics.server.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -91,9 +88,9 @@ public class CrecustService {
     private final ValidationService validationService;
     private final CreditCheckService creditCheckService;
     private final CustomerNumberService customerNumberService;
-    private final CustomerDbService customerDbService;
-    private final ProctranDbService proctranDbService;
-    private final AbndprocDelegate abndprocDelegate;
+    private final CustomerDbService customerDbService = CustomerDbService.getInstance();
+    private final ProctranDbService proctranDbService = ProctranDbService.getInstance();
+    private final AbndprocDelegate abndprocDelegate = AbndprocDelegate.getInstance();
 
     /**
      * Constructs a {@code CrecustService} with all required downstream service dependencies.
@@ -101,23 +98,14 @@ public class CrecustService {
      * @param validationService       validates customer title and date of birth
      * @param creditCheckService      performs the asynchronous credit check
      * @param customerNumberService   ENQ/DEQ and get-and-increment customer number
-     * @param customerDbService       inserts the customer row into DB2
-     * @param proctranDbService       writes the PROCTRAN audit record
-     * @param abndprocDelegate        CICS LINK delegate to ABNDPROC
      */
     public CrecustService(
             ValidationService validationService,
             CreditCheckService creditCheckService,
-            CustomerNumberService customerNumberService,
-            CustomerDbService customerDbService,
-            ProctranDbService proctranDbService,
-            AbndprocDelegate abndprocDelegate) {
+            CustomerNumberService customerNumberService) {
         this.validationService = validationService;
         this.creditCheckService = creditCheckService;
         this.customerNumberService = customerNumberService;
-        this.customerDbService = customerDbService;
-        this.proctranDbService = proctranDbService;
-        this.abndprocDelegate = abndprocDelegate;
     }
 
     /**
@@ -178,9 +166,9 @@ public class CrecustService {
             return;
         }
 
-        // Step 5: ENQ named counter — returns the NameResource for later DEQ
+        // Step 5: ENQ named counter — returns the resource name for later DEQ
         LOGGER.debug("Step 5: enqueue");
-        NameResource nameResource = customerNumberService.enqueue(commArea);
+        String nameResource = customerNumberService.enqueue(commArea);
         if (!"Y".equals(commArea.getCommSuccess())) {
             LOGGER.info("CrecustService.execute() — returning after ENQ failure");
             return;
@@ -211,8 +199,10 @@ public class CrecustService {
                 commArea,
                 commArea.getCommSortcode(),
                 commArea.getCommNumber(),
-                commArea.getCommFirstName() + " " + commArea.getCommLastName(),
-                commArea.getCommDobDay() + commArea.getCommDobMonth() + commArea.getCommDobYear(),
+                // STRING first-name DELIMITED BY '  ' ' ' last-name DELIMITED BY '  ' INTO STORED-NAME
+                commArea.getCommFirstName().stripTrailing() + " " + commArea.getCommLastName().stripTrailing(),
+                // STORED-DOB: DD/MM/YYYY (CRECUST.cbl lines 1287-1291)
+                commArea.getCommDobDay() + "/" + commArea.getCommDobMonth() + "/" + commArea.getCommDobYear(),
                 customerNumberService,
                 nameResource,
                 abndprocDelegate);
@@ -298,26 +288,7 @@ public class CrecustService {
         // absent from the local development stub jar (2.200.0-6.3 pre-GA).  Use reflection so
         // the call resolves at runtime on z/OS without modifying the provided-scope pom entry.
         // The fallback path (NoSuchMethodException) is only reachable in the off-z/OS dev build.
-        try {
-            Method getCicsVersion = Task.class.getDeclaredMethod("getCicsVersion");
-            wsCicstslevel = (String) getCicsVersion.invoke(Task.getTask());
-        } catch (NoSuchMethodException e) {
-            // Dev-environment fallback: method absent in local JCICS stub jar.
-            // Derive version from the JCICS bundle version (e.g. "2.200.0" → "7"); falls
-            // back to "000" if the package metadata is unavailable.
-            Package jcicsPackage = Task.class.getPackage();
-            String implVersion = (jcicsPackage != null) ? jcicsPackage.getImplementationVersion() : null;
-            if (implVersion != null && implVersion.length() >= CICS_VERSION_LENGTH) {
-                wsCicstslevel = implVersion.substring(0, CICS_VERSION_LENGTH).replace(".", "");
-            } else {
-                wsCicstslevel = "000";
-            }
-            LOGGER.debug("populateCicsVersion — getCicsVersion() not available in local JCICS stub; "
-                    + "wsCicstslevel set to dev-fallback value: {}", wsCicstslevel);
-        } catch (Exception e) {
-            LOGGER.warn("populateCicsVersion — unexpected exception calling getCicsVersion(); defaulting to '000'", e);
-            wsCicstslevel = "000";
-        }
+        wsCicstslevel = abndprocDelegate.getCicsVersion(CICS_VERSION_LENGTH);
     }
 
     // -----------------------------------------------------------------------

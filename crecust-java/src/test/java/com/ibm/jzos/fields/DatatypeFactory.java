@@ -52,6 +52,12 @@ public abstract class DatatypeFactory {
         }
     }
 
+    /** Registers a newly created field by moving the factory offset past it, as real JZOS does. */
+    protected <T extends Field> T advance(T field) {
+        advanceOffset(field);
+        return field;
+    }
+
     public String getStringEncoding() {
         return stringEncoding;
     }
@@ -77,23 +83,23 @@ public abstract class DatatypeFactory {
     }
 
     public BinaryAsIntField getBinaryAsIntField(int length, boolean signed) {
-        return new BinaryAsIntField(offset, length, signed);
+        return advance(new BinaryAsIntField(offset, length, signed));
     }
 
     public BinaryAsLongField getBinaryAsLongField(int length, boolean signed) {
-        return new BinaryAsLongField(offset, length, signed);
+        return advance(new BinaryAsLongField(offset, length, signed));
     }
 
     public BinaryAsBigIntegerField getBinaryAsBigIntegerField(int length, boolean signed) {
-        return new BinaryAsBigIntegerField(offset, length, signed);
+        return advance(new BinaryAsBigIntegerField(offset, length, signed));
     }
 
     public BinaryAsBigIntegerField getBinaryAsBigIntegerField(int length, int scale, boolean signed) {
-        return new BinaryAsBigIntegerField(offset, length, scale, signed);
+        return advance(new BinaryAsBigIntegerField(offset, length, scale, signed));
     }
 
     public BinaryAsBigDecimalField getBinaryAsBigDecimalField(int length, int scale, boolean signed) {
-        return new BinaryAsBigDecimalField(offset, length, scale, signed);
+        return advance(new BinaryAsBigDecimalField(offset, length, scale, signed));
     }
 
     public Field getBinaryField(int length, boolean signed) {
@@ -111,7 +117,7 @@ public abstract class DatatypeFactory {
     }
 
     public ExternalDecimalAsIntField getExternalDecimalAsIntField(int length, boolean signed, boolean signTrailing, boolean signExternal, boolean blankWhenZero) {
-        return new ExternalDecimalAsIntField(offset, length, signed, signTrailing, signExternal, blankWhenZero);
+        return advance(new ExternalDecimalAsIntField(offset, length, signed, signTrailing, signExternal, blankWhenZero));
     }
 
     public ExternalDecimalAsLongField getExternalDecimalAsLongField(int length, boolean signed) {
@@ -119,7 +125,7 @@ public abstract class DatatypeFactory {
     }
 
     public ExternalDecimalAsLongField getExternalDecimalAsLongField(int length, boolean signed, boolean signTrailing, boolean signExternal, boolean blankWhenZero) {
-        return new ExternalDecimalAsLongField(offset, length, signed, signTrailing, signExternal, blankWhenZero);
+        return advance(new ExternalDecimalAsLongField(offset, length, signed, signTrailing, signExternal, blankWhenZero));
     }
 
     public ExternalDecimalAsBigIntegerField getExternalDecimalAsBigIntegerField(int length, boolean signed) {
@@ -127,7 +133,7 @@ public abstract class DatatypeFactory {
     }
 
     public ExternalDecimalAsBigIntegerField getExternalDecimalAsBigIntegerField(int length, int scale, boolean signed, boolean signTrailing, boolean signExternal, boolean blankWhenZero) {
-        return new ExternalDecimalAsBigIntegerField(offset, length, scale, signed, signTrailing, signExternal, blankWhenZero);
+        return advance(new ExternalDecimalAsBigIntegerField(offset, length, scale, signed, signTrailing, signExternal, blankWhenZero));
     }
 
     public ExternalDecimalAsBigDecimalField getExternalDecimalAsBigDecimalField(int length, int scale, boolean signed) {
@@ -135,7 +141,7 @@ public abstract class DatatypeFactory {
     }
 
     public ExternalDecimalAsBigDecimalField getExternalDecimalAsBigDecimalField(int length, int scale, boolean signed, boolean signTrailing, boolean signExternal, boolean blankWhenZero) {
-        return new ExternalDecimalAsBigDecimalField(offset, length, scale, signed, signTrailing, signExternal, blankWhenZero);
+        return advance(new ExternalDecimalAsBigDecimalField(offset, length, scale, signed, signTrailing, signExternal, blankWhenZero));
     }
 
     public Field getExternalDecimalField(int length, int scale, boolean signed, boolean signTrailing, boolean signExternal, boolean blankWhenZero) {
@@ -151,31 +157,31 @@ public abstract class DatatypeFactory {
     }
 
     public ByteArrayField getByteArrayField(int length) {
-        return new ByteArrayField(offset, length);
+        return advance(new ByteArrayField(offset, length));
     }
 
     public IbmFloatField getIbmFloatField() {
-        return new IbmFloatField(offset);
+        return advance(new IbmFloatField(offset));
     }
 
     public IbmDoubleField getIbmDoubleField() {
-        return new IbmDoubleField(offset);
+        return advance(new IbmDoubleField(offset));
     }
 
     public PackedDecimalAsIntField getPackedDecimalAsIntField(int precision, boolean signed) {
-        return new PackedDecimalAsIntField(offset, precision, signed);
+        return advance(new PackedDecimalAsIntField(offset, precision, signed));
     }
 
     public PackedDecimalAsLongField getPackedDecimalAsLongField(int precision, boolean signed) {
-        return new PackedDecimalAsLongField(offset, precision, signed);
+        return advance(new PackedDecimalAsLongField(offset, precision, signed));
     }
 
     public PackedDecimalAsBigIntegerField getPackedDecimalAsBigIntegerField(int precision, int scale, boolean signed) {
-        return new PackedDecimalAsBigIntegerField(offset, precision, scale, signed);
+        return advance(new PackedDecimalAsBigIntegerField(offset, precision, scale, signed));
     }
 
     public PackedDecimalAsBigDecimalField getPackedDecimalAsBigDecimalField(int precision, int scale, boolean signed) {
-        return new PackedDecimalAsBigDecimalField(offset, precision, scale, signed);
+        return advance(new PackedDecimalAsBigDecimalField(offset, precision, scale, signed));
     }
 
     public abstract Field getPackedDecimalField(int precision, int scale, boolean signed);
@@ -197,6 +203,6 @@ public abstract class DatatypeFactory {
     }
 
     public StringField getStringField(int length, boolean trim, boolean padLeft, boolean allowTruncation, String encoding) {
-        return new StringField(offset, length, trim, padLeft, allowTruncation, encoding);
+        return advance(new StringField(offset, length, trim, padLeft, allowTruncation, encoding));
     }
 }

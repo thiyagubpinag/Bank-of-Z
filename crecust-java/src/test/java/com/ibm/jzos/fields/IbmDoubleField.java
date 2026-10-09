@@ -40,11 +40,12 @@ public class IbmDoubleField implements DoubleAccessor {
 
     @Override
     public double getDouble(byte[] buffer) {
-        return getDouble(buffer, this.offset);
+        return getDouble(buffer, 0);
     }
 
     @Override
     public double getDouble(byte[] buffer, int off) {
+        off += this.offset;
         long bits = 0;
         for (int i = 0; i < 8; i++) {
             bits = (bits << 8) | (buffer[off + i] & 0xFFL);
@@ -54,11 +55,12 @@ public class IbmDoubleField implements DoubleAccessor {
 
     @Override
     public void putDouble(double value, byte[] buffer) {
-        putDouble(value, buffer, this.offset);
+        putDouble(value, buffer, 0);
     }
 
     @Override
     public void putDouble(double value, byte[] buffer, int off) {
+        off += this.offset;
         long bits = Double.doubleToLongBits(value);
         for (int i = 7; i >= 0; i--) {
             buffer[off + i] = (byte) (bits & 0xFF);

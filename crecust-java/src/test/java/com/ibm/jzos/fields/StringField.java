@@ -66,10 +66,11 @@ public class StringField implements Field {
     }
 
     public String getString(byte[] buffer) {
-        return getString(buffer, this.offset);
+        return getString(buffer, 0);
     }
 
     public String getString(byte[] buffer, int off) {
+        off += this.offset;
         Charset cs;
         try {
             cs = Charset.forName(encoding);
@@ -81,10 +82,11 @@ public class StringField implements Field {
     }
 
     public void putString(String val, byte[] buffer) {
-        putString(val, buffer, this.offset);
+        putString(val, buffer, 0);
     }
 
     public void putString(String val, byte[] buffer, int off) {
+        off += this.offset;
         if (val == null) {
             val = "";
         }

@@ -16,16 +16,16 @@ public class CobolDatatypeFactory extends DatatypeFactory {
             byteLen = 8;
         }
         if (scale > 0) {
-            return new BinaryAsBigDecimalField(offset, byteLen, scale, signed);
+            return advance(new BinaryAsBigDecimalField(offset, byteLen, scale, signed));
         } else if (byteLen <= 4) {
-            return new BinaryAsIntField(offset, byteLen, signed);
+            return advance(new BinaryAsIntField(offset, byteLen, signed));
         } else {
-            return new BinaryAsLongField(offset, byteLen, signed);
+            return advance(new BinaryAsLongField(offset, byteLen, signed));
         }
     }
 
     public ExternalFloatField getExternalFloatField(int length, int scale, boolean impliedDecimal, boolean showMantissaPlusSign, boolean showExponentPlusSign) {
-        return new ExternalFloatField(offset, length, scale, impliedDecimal, showMantissaPlusSign, showExponentPlusSign);
+        return advance(new ExternalFloatField(offset, length, scale, impliedDecimal, showMantissaPlusSign, showExponentPlusSign));
     }
 
     @Override

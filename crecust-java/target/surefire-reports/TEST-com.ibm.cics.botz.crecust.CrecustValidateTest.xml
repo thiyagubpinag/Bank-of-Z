@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.ibm.cics.botz.crecust.CrecustValidateTest" time="4.415" tests="1" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="awt.toolkit" value="sun.lwawt.macosx.LWCToolkit"/>
+    <property name="java.specification.version" value="21"/>
+    <property name="jdk.extensions.version" value="21.0.6.0"/>
+    <property name="file.encoding.pkg" value="sun.io"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/Users/thiyaguseran/Desktop/testig/Bank-of-Z/crecust-java/target/test-classes:/Users/thiyaguseran/Desktop/testig/Bank-of-Z/crecust-java/target/classes:/Users/thiyaguseran/.m2/repository/com/ibm/cics/botz/botz-cics-common/1.0.0-SNAPSHOT/botz-cics-common-1.0.0-SNAPSHOT.jar:/Users/thiyaguseran/.m2/repository/com/ibm/cics/com.ibm.cics.server/2.200.0-6.3/com.ibm.cics.server-2.200.0-6.3.jar:/Users/thiyaguseran/.m2/repository/com/ibm/jzos/ibm.jzos/4.0.0.0/ibm.jzos-4.0.0.0.jar:/Users/thiyaguseran/.m2/repository/org/projectlombok/lombok/1.18.32/lombok-1.18.32.jar:/Users/thiyaguseran/.m2/repository/org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar:/Users/thiyaguseran/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.2/junit-jupiter-5.10.2.jar:/Users/thiyaguseran/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.2/junit-jupiter-api-5.10.2.jar:/Users/thiyaguseran/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/thiyaguseran/.m2/repository/org/junit/platform/junit-platform-commons/1.10.2/junit-platform-commons-1.10.2.jar:/Users/thiyaguseran/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/thiyaguseran/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.2/junit-jupiter-params-5.10.2.jar:/Users/thiyaguseran/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.2/junit-jupiter-engine-5.10.2.jar:/Users/thiyaguseran/.m2/repository/org/junit/platform/junit-platform-engine/1.10.2/junit-platform-engine-1.10.2.jar:/Users/thiyaguseran/.m2/repository/org/mockito/mockito-core/5.11.0/mockito-core-5.11.0.jar:/Users/thiyaguseran/.m2/repository/net/bytebuddy/byte-buddy/1.14.12/byte-buddy-1.14.12.jar:/Users/thiyaguseran/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.12/byte-buddy-agent-1.14.12.jar:/Users/thiyaguseran/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/Users/thiyaguseran/.m2/repository/org/mockito/mockito-junit-jupiter/5.11.0/mockito-junit-jupiter-5.11.0.jar:"/>
+    <property name="java.vm.vendor" value="Eclipse OpenJ9"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="com.ibm.vm.bitmode" value="64"/>
+    <property name="user.variant" value=""/>
+    <property name="com.ibm.oti.vm.library.version" value="29"/>
+    <property name="java.vendor.url" value="https://www.ibm.com/semeru-runtimes"/>
+    <property name="user.timezone" value="Asia/Kolkata"/>
+    <property name="os.name" value="Mac OS X"/>
+    <property name="java.vm.specification.version" value="21"/>
+    <property name="user.country" value="US"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.boot.library.path" value="/Library/Java/JavaVirtualMachines/ibm-semeru-open-21.jdk/Contents/Home/lib/default:/Library/Java/JavaVirtualMachines/ibm-semeru-open-21.jdk/Contents/Home/lib"/>
+    <property name="sun.java.command" value="/Users/thiyaguseran/Desktop/testig/Bank-of-Z/crecust-java/target/surefire/surefirebooter-20261009200601979_3.jar /Users/thiyaguseran/Desktop/testig/Bank-of-Z/crecust-java/target/surefire 2026-10-09T20-06-01_932-jvmRun1 surefire-20261009200601979_1tmp surefire_0-20261009200601979_2tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="test" value="com.ibm.cics.botz.crecust.CrecustValidateTest"/>
+    <property name="surefire.test.class.path" value="/Users/thiyaguseran/Desktop/testig/Bank-of-Z/crecust-java/target/test-classes:/Users/thiyaguseran/Desktop/testig/Bank-of-Z/crecust-java/target/classes:/Users/thiyaguseran/.m2/repository/com/ibm/cics/botz/botz-cics-common/1.0.0-SNAPSHOT/botz-cics-common-1.0.0-SNAPSHOT.jar:/Users/thiyaguseran/.m2/repository/com/ibm/cics/com.ibm.cics.server/2.200.0-6.3/com.ibm.cics.server-2.200.0-6.3.jar:/Users/thiyaguseran/.m2/repository/com/ibm/jzos/ibm.jzos/4.0.0.0/ibm.jzos-4.0.0.0.jar:/Users/thiyaguseran/.m2/repository/org/projectlombok/lombok/1.18.32/lombok-1.18.32.jar:/Users/thiyaguseran/.m2/repository/org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar:/Users/thiyaguseran/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.2/junit-jupiter-5.10.2.jar:/Users/thiyaguseran/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.2/junit-jupiter-api-5.10.2.jar:/Users/thiyaguseran/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/thiyaguseran/.m2/repository/org/junit/platform/junit-platform-commons/1.10.2/junit-platform-commons-1.10.2.jar:/Users/thiyaguseran/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/thiyaguseran/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.2/junit-jupiter-params-5.10.2.jar:/Users/thiyaguseran/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.2/junit-jupiter-engine-5.10.2.jar:/Users/thiyaguseran/.m2/repository/org/junit/platform/junit-platform-engine/1.10.2/junit-platform-engine-1.10.2.jar:/Users/thiyaguseran/.m2/repository/org/mockito/mockito-core/5.11.0/mockito-core-5.11.0.jar:/Users/thiyaguseran/.m2/repository/net/bytebuddy/byte-buddy/1.14.12/byte-buddy-1.14.12.jar:/Users/thiyaguseran/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.12/byte-buddy-agent-1.14.12.jar:/Users/thiyaguseran/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/Users/thiyaguseran/.m2/repository/org/mockito/mockito-junit-jupiter/5.11.0/mockito-junit-jupiter-5.11.0.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/Users/thiyaguseran"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2025-01-21"/>
+    <property name="java.home" value="/Library/Java/JavaVirtualMachines/ibm-semeru-open-21.jdk/Contents/Home"/>
+    <property name="ibm.signalhandling.rs" value="false"/>
+    <property name="openjdk.methodhandles" value="true"/>
+    <property name="file.separator" value="/"/>
+    <property name="jdk.extensions.name" value="Extensions for OpenJDK for Eclipse OpenJ9"/>
+    <property name="basedir" value="/Users/thiyaguseran/Desktop/testig/Bank-of-Z/crecust-java"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="com.ibm.util.extralibs.properties" value=""/>
+    <property name="java.awt.graphicsenv" value="sun.awt.CGraphicsEnvironment"/>
+    <property name="com.ibm.oti.configuration" value="scar"/>
+    <property name="apple.awt.application.name" value="ForkedBooter"/>
+    <property name="surefire.real.class.path" value="/Users/thiyaguseran/Desktop/testig/Bank-of-Z/crecust-java/target/surefire/surefirebooter-20261009200601979_3.jar"/>
+    <property name="com.ibm.oti.shared.enabled" value="false"/>
+    <property name="com.ibm.oti.vm.bootstrap.library.path" value="/Library/Java/JavaVirtualMachines/ibm-semeru-open-21.jdk/Contents/Home/lib/default:/Library/Java/JavaVirtualMachines/ibm-semeru-open-21.jdk/Contents/Home/lib"/>
+    <property name="com.ibm.cpu.endian" value="little"/>
+    <property name="java.fullversion" value="21.0.6+7-LTS&#10;JRE 21 Mac OS X aarch64-64-Bit 20250121_371 (JIT enabled, AOT enabled)&#10;OpenJ9   - 3c3d179854&#10;OMR      - e49875871&#10;JCL      - e01368f00df based on jdk-21.0.6+7"/>
+    <property name="java.runtime.version" value="21.0.6+7-LTS"/>
+    <property name="user.name" value="thiyaguseran"/>
+    <property name="stdout.encoding" value="UTF-8"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="15.6.1"/>
+    <property name="java.runtime.name" value="IBM Semeru Runtime Open Edition"/>
+    <property name="ibm.signalhandling.sigint" value="true"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="openj9.compiler" value="j9jit29"/>
+    <property name="java.vm.name" value="Eclipse OpenJ9 VM"/>
+    <property name="java.vendor.version" value="21.0.6.0"/>
+    <property name="ibm.signalhandling.sigchain" value="true"/>
+    <property name="maven.ext.class.path" value="/Users/thiyaguseran/.bobide-insiders/extensions/oracle.oracle-java-27.0.0-universal/nbcode/java/maven-nblib/netbeans-eventspy.jar"/>
+    <property name="localRepository" value="/Users/thiyaguseran/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://github.com/ibmruntimes/Semeru-Runtimes/issues"/>
+    <property name="java.io.tmpdir" value="/var/folders/1g/lp4gs_0x3cg_1h10kl7_nxd40000gn/T/"/>
+    <property name="java.version" value="21.0.6"/>
+    <property name="com.ibm.system.agent.path" value="/Library/Java/JavaVirtualMachines/ibm-semeru-open-21.jdk/Contents/Home/lib"/>
+    <property name="user.dir" value="/Users/thiyaguseran/Desktop/testig/Bank-of-Z/crecust-java"/>
+    <property name="os.arch" value="aarch64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="java.awt.printerjob" value="sun.lwawt.macosx.CPrinterJob"/>
+    <property name="os.encoding" value="UTF-8"/>
+    <property name="native.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/Library/Java/JavaVirtualMachines/ibm-semeru-open-21.jdk/Contents/Home/lib/default:/Library/Java/JavaVirtualMachines/ibm-semeru-open-21.jdk/Contents/Home/lib:/usr/lib"/>
+    <property name="java.vendor" value="IBM Corporation"/>
+    <property name="java.vm.info" value="JRE 21 Mac OS X aarch64-64-Bit 20250121_371 (JIT enabled, AOT enabled)&#10;OpenJ9   - 3c3d179854&#10;OMR      - e49875871&#10;JCL      - e01368f00df based on jdk-21.0.6+7"/>
+    <property name="stderr.encoding" value="UTF-8"/>
+    <property name="java.vm.version" value="openj9-0.49.0"/>
+    <property name="com.ibm.jcl.checkClassPath" value=""/>
+    <property name="ibm.system.encoding" value="UTF-8"/>
+    <property name="java.lang.invoke.VarHandle.VAR_HANDLE_GUARDS" value="false"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="65.0"/>
+  </properties>
+  <testcase name="testCrecust_CustomerNumberSequenceGeneration" classname="com.ibm.cics.botz.crecust.CrecustValidateTest" time="4.402">
+    <system-err><![CDATA[WARNING: A Java agent has been loaded dynamically (/Users/thiyaguseran/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.12/byte-buddy-agent-1.14.12.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+]]></system-err>
+  </testcase>
+</testsuite>

@@ -5,15 +5,11 @@ import com.ibm.cics.botz.crecust.exception.CrecustException;
 import com.ibm.cics.botz.crecust.model.CrecustCommarea;
 import com.ibm.cics.botz.crecust.model.CustomerKy2;
 import com.ibm.cics.botz.crecust.model.NcsCustNoStuff;
-import com.ibm.cics.server.CicsConditionException;
-import com.ibm.cics.server.NameResource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +26,9 @@ import org.slf4j.LoggerFactory;
 public class CustomerNumberService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomerNumberService.class);
+
+    private final AbndprocDelegate abndprocDelegate = AbndprocDelegate.getInstance();
+    private final CustomerDbService customerDbService = CustomerDbService.getInstance();
 
     /**
      * CICS named-resource ENQ/DEQ prefix for the customer-number lock.
@@ -91,27 +90,24 @@ public class CustomerNumberService {
      * <p>Resource name = {@code NCS_ACT_NAME + commArea.getCommSortcode() + "  "},
      * truncated to exactly {@link #ENQ_RESOURCE_LENGTH} bytes.
      *
-     * <p>On {@code CicsConditionException}: sets {@code commSuccess='N'} and
+     * <p>On {@code CicsAdapterException.CicsCondition}: sets {@code commSuccess='N'} and
      * {@code commFailCode=CrecustException.FAIL_CODE_ENQ}, then returns — silent-return path
      * (Rule 1, cics-transformation). No exception is re-thrown.
      *
      * @param commArea commarea; {@code commSortcode} is used to compose the 16-byte resource name
-     * @return the acquired {@link NameResource} on success; {@code null} if ENQ failed and a
+     * @return the 16-byte resource name string on success; {@code null} if ENQ failed and a
      *         silent-return fail-code has been set on the commarea
      */
-    public NameResource enqueue(CrecustCommarea commArea) {
+    public String enqueue(CrecustCommarea commArea) {
         String resourceName = (NCS_ACT_NAME + commArea.getCommSortcode() + "  ")
                 .substring(0, ENQ_RESOURCE_LENGTH);
-
-        NameResource nameResource = new NameResource();
-        nameResource.setName(resourceName);
 
         LOGGER.debug("CustomerNumberService.enqueue() — ENQ resource='{}' (length={})",
                 resourceName, ENQ_RESOURCE_LENGTH);
 
         try {
-            nameResource.enqueue();
-        } catch (CicsConditionException e) {
+            abndprocDelegate.enqueue(resourceName);
+        } catch (CicsAdapterException.CicsCondition e) {
             LOGGER.error("CustomerNumberService.enqueue() — ENQ failed; setting fail-code {}",
                     CrecustException.FAIL_CODE_ENQ, e);
             commArea.setCommSuccess("N");
@@ -119,7 +115,7 @@ public class CustomerNumberService {
             return null;
         }
 
-        return nameResource;
+        return resourceName;
     }
 
     /**
@@ -147,7 +143,7 @@ public class CustomerNumberService {
      * @param nameResource the {@link NameResource} acquired by {@link #enqueue(CrecustCommarea)};
      *                     passed so that DEQ can be issued on SQL failure
      */
-    public void getAndIncrementCustomerNumber(CrecustCommarea commArea, NameResource nameResource) {
+    public void getAndIncrementCustomerNumber(CrecustCommarea commArea, String nameResource) {
         // UPD-NCS_UN010: MOVE 1 TO NCS-CUST-NO-INC; MOVE SORTCODE TO NCS-CUST-NO-TEST-SORT
         NcsCustNoStuff ncsCustNoStuff = new NcsCustNoStuff();
         ncsCustNoStuff.setNcsCustNoInc(1L);
@@ -160,12 +156,12 @@ public class CustomerNumberService {
                 + "Searching for CONTROL_NAME=[{}]",
                 hostControlRow.getHvControlName().substring(0, ENQ_RESOURCE_LENGTH));
 
-        try (Connection conn = getDataSource().getConnection()) {
+        try (Connection conn = customerDbService.getControlConnection()) {
             // SELECT CONTROL_VALUE_NUM INTO :HV-CONTROL-VALUE-NUM
-            try (PreparedStatement sel = conn.prepareStatement(CONTROL_SELECT_SQL)) {
+            try (PreparedStatement sel = customerDbService.prepareControlSelect(conn, CONTROL_SELECT_SQL)) {
                 sel.setString(1, hostControlRow.getHvControlName());
-                try (ResultSet rs = sel.executeQuery()) {
-                    if (!rs.next()) {
+                try (ResultSet rs = customerDbService.executeControlSelect(sel)) {
+                    if (!customerDbService.controlResultSetNext(rs)) {
                         // SQLCODE +100 (row not found) → IF SQLCODE NOT = 0 branch
                         LOGGER.error("CustomerNumberService.getAndIncrementCustomerNumber() — "
                                 + "SELECT CONTROL failed: no row for CONTROL_NAME=[{}]",
@@ -181,10 +177,10 @@ public class CustomerNumberService {
             hostControlRow.setHvControlValueNum(hostControlRow.getHvControlValueNum() + 1);
 
             // UPDATE CONTROL SET CONTROL_VALUE_NUM = :HV-CONTROL-VALUE-NUM
-            try (PreparedStatement upd = conn.prepareStatement(CONTROL_UPDATE_SQL)) {
+            try (PreparedStatement upd = customerDbService.prepareControlUpdate(conn, CONTROL_UPDATE_SQL)) {
                 upd.setInt(1, hostControlRow.getHvControlValueNum());
                 upd.setString(2, hostControlRow.getHvControlName());
-                upd.executeUpdate();
+                customerDbService.executeControlUpdate(upd);
             }
         } catch (SQLException e) {
             LOGGER.error("CustomerNumberService.getAndIncrementCustomerNumber() — CONTROL SQL failed. "
@@ -199,16 +195,6 @@ public class CustomerNumberService {
         }
 
         pushCustomerNumber(commArea, ncsCustNoStuff, hostControlRow.getHvControlValueNum());
-    }
-
-    /**
-     * Obtains the DB2 DataSource via JNDI (ADR-4 — no {@code @Resource}, no Spring injection).
-     *
-     * @return the DataSource bound at {@link #DATASOURCE_JNDI_NAME}
-     * @throws NamingException if the JNDI lookup fails
-     */
-    private DataSource getDataSource() throws NamingException {
-        return (DataSource) new InitialContext().lookup(DATASOURCE_JNDI_NAME);
     }
 
     /**
@@ -233,7 +219,7 @@ public class CustomerNumberService {
      * @param commArea     commarea receiving the fail-code
      * @param nameResource the ENQ'd resource to release
      */
-    private void failControlSql(CrecustCommarea commArea, NameResource nameResource) {
+    private void failControlSql(CrecustCommarea commArea, String nameResource) {
         dequeue(commArea, nameResource);
         commArea.setCommSuccess("N");
         commArea.setCommFailCode(CrecustException.FAIL_CODE_CONTROL_SQL);
@@ -289,7 +275,7 @@ public class CustomerNumberService {
      *   <li>{@code ProctranDbService.insertProctran()} success path (Story 8.1)</li>
      * </ol>
      *
-     * <p>On {@link CicsConditionException}: sets {@code commSuccess='N'} and
+     * <p>On {@link CicsAdapterException.CicsCondition}: sets {@code commSuccess='N'} and
      * {@code commFailCode=CrecustException.FAIL_CODE_DEQ ('5')}, then returns —
      * silent-return path (Rule 1, cics-transformation). No exception is re-thrown, no ABEND.
      *
@@ -298,20 +284,20 @@ public class CustomerNumberService {
      *
      * @param commArea     commarea; {@code commSuccess} and {@code commFailCode} are set on
      *                     DEQ failure
-     * @param nameResource the {@link NameResource} acquired by {@link #enqueue(CrecustCommarea)};
-     *                     must be the same instance that was enqueued; may be {@code null} when
+     * @param nameResource the 16-byte ENQ resource name returned by
+     *                     {@link #enqueue(CrecustCommarea)}; may be {@code null} when
      *                     ENQ was never acquired
      */
-    public void dequeue(CrecustCommarea commArea, NameResource nameResource) {
+    public void dequeue(CrecustCommarea commArea, String nameResource) {
         if (nameResource == null) {
             LOGGER.warn("CustomerNumberService.dequeue() — nameResource is null; DEQ skipped");
             return;
         }
 
         try {
-            nameResource.dequeue();
+            abndprocDelegate.dequeue(nameResource);
             LOGGER.debug("CustomerNumberService.dequeue() — DEQ released resource");
-        } catch (CicsConditionException e) {
+        } catch (CicsAdapterException.CicsCondition e) {
             LOGGER.error("CustomerNumberService.dequeue() — DEQ failed; setting fail-code {}",
                     CrecustException.FAIL_CODE_DEQ, e);
             commArea.setCommSuccess("N");

@@ -11,22 +11,24 @@ public class BinaryAsBigDecimalField extends BinaryAsBigIntegerField implements 
 
     @Override
     public BigDecimal getBigDecimal(byte[] buffer) {
-        return getBigDecimal(buffer, this.offset);
+        return getBigDecimal(buffer, 0);
     }
 
     @Override
     public BigDecimal getBigDecimal(byte[] buffer, int off) {
+        off += this.offset;
         BigInteger bi = getBigInteger(buffer, off);
         return new BigDecimal(bi, scale);
     }
 
     @Override
     public void putBigDecimal(BigDecimal value, byte[] buffer) throws IllegalArgumentException {
-        putBigDecimal(value, buffer, this.offset);
+        putBigDecimal(value, buffer, 0);
     }
 
     @Override
     public void putBigDecimal(BigDecimal value, byte[] buffer, int off) throws IllegalArgumentException {
+        off += this.offset;
         BigInteger bi = value.scaleByPowerOfTen(scale).toBigInteger();
         putBigInteger(bi, buffer, off);
     }

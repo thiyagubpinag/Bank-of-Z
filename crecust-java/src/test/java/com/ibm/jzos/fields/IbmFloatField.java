@@ -25,11 +25,12 @@ public class IbmFloatField implements FloatAccessor {
 
     @Override
     public float getFloat(byte[] buffer) {
-        return getFloat(buffer, this.offset);
+        return getFloat(buffer, 0);
     }
 
     @Override
     public float getFloat(byte[] buffer, int off) {
+        off += this.offset;
         int bits = 0;
         for (int i = 0; i < 4; i++) {
             bits = (bits << 8) | (buffer[off + i] & 0xFF);
@@ -39,11 +40,12 @@ public class IbmFloatField implements FloatAccessor {
 
     @Override
     public void putFloat(float value, byte[] buffer) {
-        putFloat(value, buffer, this.offset);
+        putFloat(value, buffer, 0);
     }
 
     @Override
     public void putFloat(float value, byte[] buffer, int off) {
+        off += this.offset;
         int bits = Float.floatToIntBits(value);
         for (int i = 3; i >= 0; i--) {
             buffer[off + i] = (byte) (bits & 0xFF);

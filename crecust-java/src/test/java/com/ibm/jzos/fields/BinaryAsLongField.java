@@ -67,11 +67,12 @@ public class BinaryAsLongField implements LongAccessor {
 
     @Override
     public long getLong(byte[] buffer) {
-        return getLong(buffer, this.offset);
+        return getLong(buffer, 0);
     }
 
     @Override
     public long getLong(byte[] buffer, int off) {
+        off += this.offset;
         long val = 0;
         for (int i = 0; i < length; i++) {
             val = (val << 8) | (buffer[off + i] & 0xFFL);
@@ -85,11 +86,12 @@ public class BinaryAsLongField implements LongAccessor {
 
     @Override
     public void putLong(long value, byte[] buffer) throws IllegalArgumentException {
-        putLong(value, buffer, this.offset);
+        putLong(value, buffer, 0);
     }
 
     @Override
     public void putLong(long value, byte[] buffer, int off) throws IllegalArgumentException {
+        off += this.offset;
         for (int i = length - 1; i >= 0; i--) {
             buffer[off + i] = (byte) (value & 0xFF);
             value >>= 8;

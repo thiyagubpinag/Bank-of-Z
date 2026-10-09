@@ -51,11 +51,12 @@ public class BinaryAsIntField implements IntAccessor {
 
     @Override
     public int getInt(byte[] buffer) {
-        return getInt(buffer, this.offset);
+        return getInt(buffer, 0);
     }
 
     @Override
     public int getInt(byte[] buffer, int off) {
+        off += this.offset;
         int val = 0;
         for (int i = 0; i < length; i++) {
             val = (val << 8) | (buffer[off + i] & 0xFF);
@@ -69,11 +70,12 @@ public class BinaryAsIntField implements IntAccessor {
 
     @Override
     public void putInt(int value, byte[] buffer) throws IllegalArgumentException {
-        putInt(value, buffer, this.offset);
+        putInt(value, buffer, 0);
     }
 
     @Override
     public void putInt(int value, byte[] buffer, int off) throws IllegalArgumentException {
+        off += this.offset;
         for (int i = length - 1; i >= 0; i--) {
             buffer[off + i] = (byte) (value & 0xFF);
             value >>= 8;

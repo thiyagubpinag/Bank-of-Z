@@ -48,11 +48,12 @@ public class BinaryAsBigIntegerField implements BigIntegerAccessor {
 
     @Override
     public BigInteger getBigInteger(byte[] buffer) {
-        return getBigInteger(buffer, this.offset);
+        return getBigInteger(buffer, 0);
     }
 
     @Override
     public BigInteger getBigInteger(byte[] buffer, int off) {
+        off += this.offset;
         byte[] bytes = new byte[length];
         System.arraycopy(buffer, off, bytes, 0, length);
         return signed ? new BigInteger(bytes) : new BigInteger(1, bytes);
@@ -60,11 +61,12 @@ public class BinaryAsBigIntegerField implements BigIntegerAccessor {
 
     @Override
     public void putBigInteger(BigInteger value, byte[] buffer) throws IllegalArgumentException {
-        putBigInteger(value, buffer, this.offset);
+        putBigInteger(value, buffer, 0);
     }
 
     @Override
     public void putBigInteger(BigInteger value, byte[] buffer, int off) throws IllegalArgumentException {
+        off += this.offset;
         byte[] valBytes = value.toByteArray();
         for (int i = 0; i < length; i++) {
             int srcIdx = valBytes.length - 1 - i;
